@@ -1,0 +1,388 @@
+/* RegisterPage.css - Polished Version */
+
+/* --- General Setup & Color Palette --- */
+:root {
+  --almond: #ede0d4;
+  --dun: #e6ccb2;
+  --tan: #ddb892;
+  --chamoisee: #b08968;
+  --raw-umber: #9c6644;
+  --coffee: #7f5539;
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --text-success: #28a745;
+  --text-muted: #6c757d;
+}
+
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(160deg, var(--almond), var(--dun));
+    font-family: 'Assistant', sans-serif;
+    direction: rtl;
+}
+
+/* --- Register Card --- */
+.register-card {
+    background-color: var(--text-light);
+    padding: 30px 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 460px; /* Reduced width for a tighter look */
+    box-sizing: border-box;
+}
+
+/* --- Header --- */
+.form-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.form-header .logo-icon {
+    font-size: 2.5rem; /* Slightly smaller icon */
+    color: var(--raw-umber);
+}
+
+.form-header h2 {
+    font-size: 1.6rem; /* Reduced font size */
+    color: var(--text-dark);
+    margin: 5px 0;
+}
+
+.form-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* --- Form Fields Layout --- */
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Reduced gap between fields */
+}
+
+.field-row {
+    display: flex;
+    gap: 16px;
+}
+
+.field-row .input-group, .field-row .field-group {
+    flex: 1;
+}
+
+/* --- Input Group (Floating Label Style) --- */
+.input-group, .field-group {
+    position: relative;
+}
+
+.input-group .input-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 12px;
+    color: #aaa;
+    transition: color 0.3s ease;
+    z-index: 1;
+    font-size: 1.2rem;
+}
+
+.input-group input, .field-group select {
+    width: 100%;
+    padding: 12px 15px; /* Reduced padding */
+    border: 1px solid var(--dun); /* Thinner border */
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: transparent;
+    outline: none;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    color: var(--text-dark);
+}
+
+.input-group input {
+    padding-right: 40px; /* Space for icon */
+}
+
+.input-group label {
+    position: absolute;
+    top: 12px;
+    right: 40px;
+    color: #aaa;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    background-color: var(--text-light);
+    padding: 0 5px;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label {
+    top: -8px; /* Adjusted for thinner border */
+    font-size: 0.8rem;
+    color: var(--coffee);
+}
+
+.input-group input:focus {
+    border-color: var(--coffee);
+}
+
+.input-group input:focus ~ .input-icon {
+    color: var(--coffee);
+}
+
+/* --- Select (Dropdown) Fields --- */
+.field-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    text-align: right;
+}
+
+.field-group select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="none" stroke="%237f5539" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m2 5 6 6 6-6"/></svg>');
+    background-repeat: no-repeat;
+    background-position: left 0.75rem center;
+    background-size: 1em auto;
+}
+
+.field-group select:focus {
+    border-color: var(--coffee);
+}
+
+
+/* --- Password Requirements --- */
+.password-requirements {
+    margin: -5px 5px 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: right;
+}
+
+.requirement {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.requirement.met {
+    color: var(--text-success);
+}
+.requirement span {
+    font-size: 0.6rem;
+    color: var(--text-success);
+}
+
+/* --- Submit Button --- */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--coffee);
+    color: var(--text-light);
+    font-size: 1rem;
+    font-family: 'Assistant', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(127, 85, 57, 0.25);
+    background-color: var(--raw-umber);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* --- Divider & Google Button (re-using login styles) --- */
+.divider {
+    display: flex; align-items: center; color: #aaa; margin: 20px 0;
+}
+.divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background-color: var(--dun);
+}
+.divider span {
+    padding: 0 15px;
+}
+
+.google-btn {
+    width: 100%; padding: 12px; background: var(--text-light); color: var(--text-dark); border: 1px solid var(--dun); border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.google-btn::before {
+    content: ''; display: block; width: 18px; height: 18px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' width='48px' height='48px'%3e%3cpath fill='%23FFC107' d='M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z'/%3e%3cpath fill='%23FF3D00' d='M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z'/%3e%3cpath fill='%234CAF50' d='M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z'/%3e%3cpath fill='%231976D2' d='M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.021,35.596,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z'/%3e%3c/svg%3e"); background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+.google-btn:hover:not(:disabled) {
+    border-color: var(--coffee); transform: translateY(-2px);
+}
+
+/* --- Form Footer & Error Message --- */
+.form-footer {
+    text-align: center; margin-top: 20px; color: var(--text-muted);
+}
+.form-footer a {
+    color: var(--coffee); text-decoration: none; font-weight: 600; transition: color 0.2s;
+}
+.form-footer a:hover {
+    color: var(--raw-umber); text-decoration: underline;
+}
+
+.error-message {
+    color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; text-align: center;
+}
+
+/* ===================================== */
+/* Responsive Design            */
+/* ===================================== */
+
+/* Large screens (34-inch and similar) */
+@media (min-width: 2560px) {
+  .register-container {
+    padding: 3rem;
+  }
+  
+  .register-card {
+    max-width: 600px;
+    padding: 3rem;
+  }
+  
+  .form-header h2 {
+    font-size: 2.5rem;
+  }
+  
+  .form-header p {
+    font-size: 1.2rem;
+  }
+  
+  .input-group input, .field-group select {
+    padding: 1rem 1rem 1rem 3rem;
+    font-size: 1.1rem;
+  }
+  
+  .submit-btn {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .google-btn {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+}
+
+/* Laptop screens */
+@media (max-width: 1366px) {
+  .register-container {
+    padding: 2rem;
+  }
+  
+  .register-card {
+    max-width: 500px;
+    padding: 2.5rem;
+  }
+}
+
+/* Tablet screens */
+@media (max-width: 992px) {
+  .register-container {
+    padding: 1.5rem;
+  }
+  
+  .register-card {
+    max-width: 450px;
+    padding: 2rem;
+  }
+  
+  .field-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .field-row .input-group, .field-row .field-group {
+    width: 100%;
+  }
+}
+
+/* Mobile screens */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 1rem;
+    min-height: 100vh;
+  }
+  
+  .register-card {
+    max-width: 100%;
+    padding: 1.5rem;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .form-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .form-header p {
+    font-size: 0.95rem;
+  }
+  
+  .input-group input, .field-group select {
+    padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+    font-size: 1rem;
+  }
+  
+  .submit-btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+  
+  .google-btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 0.5rem;
+  }
+  
+  .register-card {
+    padding: 1rem;
+  }
+  
+  .form-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .form-header p {
+    font-size: 0.9rem;
+  }
+  
+  .input-group input, .field-group select {
+    padding: 0.7rem 0.7rem 0.7rem 2.2rem;
+    font-size: 0.95rem;
+  }
+  
+  .submit-btn {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+  }
+  
+  .google-btn {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+  }
+}
