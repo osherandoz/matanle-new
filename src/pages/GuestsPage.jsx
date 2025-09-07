@@ -1,0 +1,1173 @@
+import React, { useState, useEffect } from "react";
+
+// Mock guests data
+const mockGuests = [
+  {
+    id: 1,
+    fullName: "יוסי כהן",
+    phone: "052-1234567",
+    adults: 2,
+    kids: 1,
+    relative: "צד החתן",
+    notes: "דורש מקום נגיש לכיסא גלגלים",
+    status: "מאשר"
+  },
+  {
+    id: 2,
+    fullName: "רחל לוי",
+    phone: "054-9876543",
+    adults: 1,
+    kids: 0,
+    relative: "צד הכלה",
+    notes: "צמחונית",
+    status: "מאשר"
+  },
+  {
+    id: 3,
+    fullName: "דני ופטרה גרין",
+    phone: "050-5555555",
+    adults: 2,
+    kids: 2,
+    relative: "צד החתן",
+    notes: "יגיעו מאוחר - עד 19:30",
+    status: "מאשר"
+  },
+  {
+    id: 4,
+    fullName: "משפחת רוזנברג",
+    phone: "03-8887777",
+    adults: 4,
+    kids: 3,
+    relative: "צד הכלה",
+    notes: "הילדים אלרגיים לאגוזים",
+    status: "לא החזיר תשובה"
+  },
+  {
+    id: 5,
+    fullName: "עמית ושירי מזרחי",
+    phone: "050-1111111",
+    adults: 2,
+    kids: 0,
+    relative: "צד החתן",
+    notes: "יגיעו ישירות מהעבודה",
+    status: "מאשר"
+  },
+  {
+    id: 6,
+    fullName: "סבתא שרה",
+    phone: "02-6666666",
+    adults: 1,
+    kids: 0,
+    relative: "צד הכלה",
+    notes: "צריכה עזרה בהליכה",
+    status: "מאשר"
+  },
+  {
+    id: 7,
+    fullName: "משפחת אבירם",
+    phone: "09-3333333",
+    adults: 2,
+    kids: 1,
+    relative: "צד החתן",
+    notes: "",
+    status: "לא מגיע"
+  },
+  {
+    id: 8,
+    fullName: "חברי העבודה",
+    phone: "054-7777777",
+    adults: 6,
+    kids: 0,
+    relative: "צד החתן",
+    notes: "קבוצה של חברים מהעבודה",
+    status: "מאשר"
+  }
+];
+
+const relatives = ["הכל", "צד החתן", "צד הכלה", "משפחה", "חברים"];
+const statuses = ["הכל", "מאשר", "לא מגיע", "לא החזיר תשובה"];
+
+export default function GuestsPage() {
+  const [guests, setGuests] = useState(mockGuests);
+  const [viewMode, setViewMode] = useState("grid"); // "table" or "grid"
+  const [filterRelative, setFilterRelative] = useState("הכל");
+  const [filterStatus, setFilterStatus] = useState("הכל");
+  const [sortBy, setSortBy] = useState("fullName");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingStatus, setEditingStatus] = useState(null); // ID of guest whose status is being edited
+
+  // Filter and sort guests
+  const filteredGuests = guests
+    .filter(guest => {
+      const matchesRelative = filterRelative === "הכל" || guest.relative === filterRelative;
+      const matchesStatus = filterStatus === "הכל" || guest.status === filterStatus;
+      const matchesSearch = guest.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           guest.phone.includes(searchTerm) ||
+                           guest.relative.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           guest.notes.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesRelative && matchesStatus && matchesSearch;
+    })
+    .sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+      
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+  // Calculate stats
+  const confirmedGuests = filteredGuests.filter(g => g.status === "מאשר").length;
+  const declinedGuests = filteredGuests.filter(g => g.status === "לא מגיע").length;
+  const noResponseGuests = filteredGuests.filter(g => g.status === "לא החזיר תשובה").length;
+  const totalAdults = filteredGuests.filter(g => g.status === "מאשר").reduce((sum, g) => sum + g.adults, 0);
+  const totalKids = filteredGuests.filter(g => g.status === "מאשר").reduce((sum, g) => sum + g.kids, 0);
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "מאשר": return "status-confirmed";
+      case "לא מגיע": return "status-declined";
+      case "לא החזיר תשובה": return "status-no-response";
+      default: return "";
+    }
+  };
+
+  const handleStatusChange = (guestId, newStatus) => {
+    setGuests(prevGuests => 
+      prevGuests.map(guest => 
+        guest.id === guestId ? { ...guest, status: newStatus } : guest
+      )
+    );
+    setEditingStatus(null);
+  };
+
+  const handleStatusClick = (guestId) => {
+    setEditingStatus(editingStatus === guestId ? null : guestId);
+  };
+
+  // Close status dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editingStatus && !event.target.closest('.status-cell')) {
+        setEditingStatus(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingStatus]);
+
+  const getWhatsAppLink = (phone) => {
+    const cleanPhone = phone.replace(/[-\s]/g, '');
+    const internationalPhone = cleanPhone.startsWith('0') ? '972' + cleanPhone.substring(1) : cleanPhone;
+    return `https://wa.me/${internationalPhone}`;
+  };
+
+  return (
+    <div className="guests-page">
+      {/* Header */}
+      <div className="page-header">
+        <div className="header-content">
+          <div className="header-info">
+            <h1>
+              <i className="fa-solid fa-users"></i>
+              מוזמנים
+            </h1>
+            <p>נהל את רשימת המוזמנים שלך לאירוע</p>
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowAddForm(true)}
+          >
+            <i className="fa-solid fa-plus"></i>
+            הוספת מוזמן
+          </button>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="summary-cards">
+          <div className="summary-card glass">
+            <div className="card-icon total">
+              <i className="fa-solid fa-users"></i>
+            </div>
+            <div className="card-info">
+              <h3>סה"כ מוזמנים</h3>
+              <p className="amount">{filteredGuests.length}</p>
+            </div>
+          </div>
+          <div className="summary-card glass">
+            <div className="card-icon confirmed">
+              <i className="fa-solid fa-check-circle"></i>
+            </div>
+            <div className="card-info">
+              <h3>מאשרים</h3>
+              <p className="amount">{confirmedGuests}</p>
+            </div>
+          </div>
+          <div className="summary-card glass">
+            <div className="card-icon adults">
+              <i className="fa-solid fa-user"></i>
+            </div>
+            <div className="card-info">
+              <h3>מבוגרים</h3>
+              <p className="amount">{totalAdults}</p>
+            </div>
+          </div>
+          <div className="summary-card glass">
+            <div className="card-icon kids">
+              <i className="fa-solid fa-child"></i>
+            </div>
+            <div className="card-info">
+              <h3>ילדים</h3>
+              <p className="amount">{totalKids}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters and Controls */}
+      <div className="controls-section glass">
+        <div className="filters">
+          <div className="filter-group">
+            <label>חיפוש</label>
+            <div className="search-input">
+              <i className="fa-solid fa-search"></i>
+              <input
+                type="text"
+                placeholder="חיפוש לפי שם, טלפון או הערות..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="filter-group">
+            <label>קבוצה</label>
+            <select value={filterRelative} onChange={(e) => setFilterRelative(e.target.value)}>
+              {relatives.map(rel => (
+                <option key={rel} value={rel}>{rel}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>סטטוס</label>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              {statuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="view-controls">
+          <div className="view-toggle">
+            <button 
+              className={`view-btn ${viewMode === "table" ? "active" : ""}`}
+              onClick={() => setViewMode("table")}
+            >
+              <i className="fa-solid fa-table"></i>
+              טבלה
+            </button>
+            <button 
+              className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+            >
+              <i className="fa-solid fa-th-large"></i>
+              כרטיסים
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="content-section">
+        {viewMode === "table" ? (
+          <div className="table-view glass">
+            <div className="table-container">
+              <table className="guests-table">
+                <thead>
+                  <tr>
+                    <th onClick={() => handleSort("fullName")}>
+                      שם מלא
+                      {sortBy === "fullName" && (
+                        <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
+                      )}
+                    </th>
+                    <th>פרטי קשר</th>
+                    <th onClick={() => handleSort("adults")}>
+                      מבוגרים
+                      {sortBy === "adults" && (
+                        <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
+                      )}
+                    </th>
+                    <th onClick={() => handleSort("kids")}>
+                      ילדים
+                      {sortBy === "kids" && (
+                        <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
+                      )}
+                    </th>
+                    <th onClick={() => handleSort("relative")}>
+                      קבוצה
+                      {sortBy === "relative" && (
+                        <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
+                      )}
+                    </th>
+                    <th>סטטוס</th>
+                    <th>הערות</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredGuests.map(guest => (
+                    <tr key={guest.id}>
+                      <td>
+                        <div className="guest-name">
+                          <strong>{guest.fullName}</strong>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="contact-info">
+                          <div className="contact-item">
+                            <i className="fa-solid fa-phone"></i>
+                            <a href={`tel:${guest.phone}`}>{guest.phone}</a>
+                          </div>
+                          <div className="contact-item">
+                            <i className="fa-brands fa-whatsapp"></i>
+                            <a href={getWhatsAppLink(guest.phone)} target="_blank" rel="noopener noreferrer">
+                              WhatsApp
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="count-badge adults-count">{guest.adults}</span>
+                      </td>
+                      <td>
+                        <span className="count-badge kids-count">{guest.kids}</span>
+                      </td>
+                      <td>
+                        <span className="relative-badge">{guest.relative}</span>
+                      </td>
+                      <td>
+                        <div className="status-cell">
+                          {editingStatus === guest.id ? (
+                            <select 
+                              value={guest.status} 
+                              onChange={(e) => handleStatusChange(guest.id, e.target.value)}
+                              onBlur={() => setEditingStatus(null)}
+                              onKeyDown={(e) => e.key === 'Escape' && setEditingStatus(null)}
+                              autoFocus
+                              className="status-select"
+                            >
+                              <option value="מאשר">מאשר</option>
+                              <option value="לא מגיע">לא מגיע</option>
+                              <option value="לא החזיר תשובה">לא החזיר תשובה</option>
+                            </select>
+                          ) : (
+                            <span 
+                              className={`status-badge ${getStatusClass(guest.status)} clickable`}
+                              onClick={() => handleStatusClick(guest.id)}
+                            >
+                              {guest.status}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="notes-cell" title={guest.notes}>
+                          {guest.notes ? (
+                            guest.notes.length > 30 ? 
+                              guest.notes.substring(0, 30) + "..." : 
+                              guest.notes
+                          ) : "-"}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="actions">
+                          <button className="action-btn edit">
+                            <i className="fa-solid fa-edit"></i>
+                          </button>
+                          <button className="action-btn delete">
+                            <i className="fa-solid fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="grid-view">
+            {filteredGuests.map(guest => (
+              <div key={guest.id} className="guest-card glass">
+                <div className="card-header">
+                  <div className="guest-info">
+                    <h3 className="guest-name">{guest.fullName}</h3>
+                    <span className="relative-badge">{guest.relative}</span>
+                  </div>
+                  <div className="status-cell">
+                    {editingStatus === guest.id ? (
+                      <select 
+                        value={guest.status} 
+                        onChange={(e) => handleStatusChange(guest.id, e.target.value)}
+                        onBlur={() => setEditingStatus(null)}
+                        onKeyDown={(e) => e.key === 'Escape' && setEditingStatus(null)}
+                        autoFocus
+                        className="status-select"
+                      >
+                        <option value="מאשר">מאשר</option>
+                        <option value="לא מגיע">לא מגיע</option>
+                        <option value="לא החזיר תשובה">לא החזיר תשובה</option>
+                      </select>
+                    ) : (
+                      <span 
+                        className={`status-badge ${getStatusClass(guest.status)} clickable`}
+                        onClick={() => handleStatusClick(guest.id)}
+                      >
+                        {guest.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="card-body">
+                  <div className="contact-section">
+                    <div className="contact-item">
+                      <i className="fa-solid fa-phone"></i>
+                      <a href={`tel:${guest.phone}`}>{guest.phone}</a>
+                    </div>
+                    <div className="contact-item whatsapp-link">
+                      <i className="fa-brands fa-whatsapp"></i>
+                      <a href={getWhatsAppLink(guest.phone)} target="_blank" rel="noopener noreferrer">
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div className="counts-section">
+                    <div className="count-item">
+                      <div className="count-icon adults">
+                        <i className="fa-solid fa-user"></i>
+                      </div>
+                      <div className="count-info">
+                        <span className="count-label">מבוגרים</span>
+                        <span className="count-value">{guest.adults}</span>
+                      </div>
+                    </div>
+                    <div className="count-item">
+                      <div className="count-icon kids">
+                        <i className="fa-solid fa-child"></i>
+                      </div>
+                      <div className="count-info">
+                        <span className="count-label">ילדים</span>
+                        <span className="count-value">{guest.kids}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {guest.notes && (
+                    <div className="notes-section">
+                      <div className="notes-header">
+                        <i className="fa-solid fa-sticky-note"></i>
+                        <span>הערות</span>
+                      </div>
+                      <p className="notes-text">{guest.notes}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="card-actions">
+                  <button className="action-btn edit">
+                    <i className="fa-solid fa-edit"></i>
+                    עריכה
+                  </button>
+                  <button className="action-btn delete">
+                    <i className="fa-solid fa-trash"></i>
+                    מחיקה
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <style jsx>{`
+        .guests-page {
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+          min-height: 100vh;
+        }
+
+        .page-header {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+        }
+
+        .header-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: var(--space-md);
+        }
+
+        .header-info h1 {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          margin: 0 0 var(--space-xs) 0;
+          font-size: 2rem;
+          color: var(--text);
+          font-weight: 700;
+        }
+
+        .header-info p {
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: 1.1rem;
+        }
+
+        .btn {
+          padding: var(--space-sm) var(--space-lg);
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .btn-primary {
+          background: var(--brand);
+          color: white;
+        }
+
+        .btn-primary:hover {
+          background: var(--brand-hover);
+          transform: translateY(-1px);
+        }
+
+        .summary-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: var(--space-md);
+        }
+
+        .summary-card {
+          padding: var(--space-lg);
+          border-radius: var(--radius-lg);
+          display: flex;
+          align-items: center;
+          gap: var(--space-md);
+        }
+
+        .card-icon {
+          width: 50px;
+          height: 50px;
+          border-radius: var(--radius-md);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+        }
+
+        .card-icon.total {
+          background: rgba(124, 92, 255, 0.2);
+          color: var(--brand);
+        }
+
+        .card-icon.confirmed {
+          background: rgba(30, 190, 126, 0.2);
+          color: #1ebe7e;
+        }
+
+        .card-icon.adults {
+          background: rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+        }
+
+        .card-icon.kids {
+          background: rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
+        }
+
+        .card-info h3 {
+          margin: 0 0 var(--space-xs) 0;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+
+        .card-info .amount {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--text);
+        }
+
+        .controls-section {
+          padding: var(--space-lg);
+          border-radius: var(--radius-lg);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: var(--space-lg);
+          flex-wrap: wrap;
+        }
+
+        .filters {
+          display: flex;
+          gap: var(--space-md);
+          flex-wrap: wrap;
+        }
+
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .filter-group label {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+
+        .search-input {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .search-input i {
+          position: absolute;
+          right: var(--space-sm);
+          color: var(--text-secondary);
+          pointer-events: none;
+        }
+
+        .search-input input,
+        .filter-group select {
+          padding: var(--space-sm) var(--space-md);
+          padding-right: 2.5rem;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text);
+          font-size: 0.95rem;
+          min-width: 180px;
+        }
+
+        .search-input input:focus,
+        .filter-group select:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+        }
+
+        .view-controls {
+          display: flex;
+          gap: var(--space-sm);
+        }
+
+        .view-toggle {
+          display: flex;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .view-btn {
+          padding: var(--space-sm) var(--space-md);
+          border: none;
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all var(--transition);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .view-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .view-btn.active {
+          background: var(--brand);
+          color: white;
+        }
+
+        .content-section {
+          flex: 1;
+        }
+
+        .table-view {
+          padding: var(--space-lg);
+          border-radius: var(--radius-lg);
+        }
+
+        .table-container {
+          overflow-x: auto;
+        }
+
+        .guests-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .guests-table th,
+        .guests-table td {
+          padding: var(--space-md);
+          text-align: right;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .guests-table th {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-secondary);
+          font-weight: 600;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .guests-table th:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .guests-table th i {
+          margin-right: var(--space-xs);
+        }
+
+        .guests-table td {
+          color: var(--text);
+        }
+
+        .guest-name strong {
+          display: block;
+          margin-bottom: var(--space-xs);
+        }
+
+        .contact-info {
+          font-size: 0.85rem;
+        }
+
+        .contact-item {
+          margin-bottom: var(--space-xs);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .contact-item i {
+          width: 12px;
+          color: var(--text-secondary);
+        }
+
+        .contact-item a {
+          color: var(--brand);
+          text-decoration: none;
+        }
+
+        .contact-item a:hover {
+          text-decoration: underline;
+        }
+
+        .contact-item.whatsapp-link a {
+          color: #25d366;
+        }
+
+        .count-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+
+        .count-badge.adults-count {
+          background: rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+        }
+
+        .count-badge.kids-count {
+          background: rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
+        }
+
+        .relative-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: var(--space-xs) var(--space-sm);
+          border-radius: var(--radius-sm);
+          font-size: 0.85rem;
+          font-weight: 500;
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: var(--space-xs) var(--space-sm);
+          border-radius: var(--radius-sm);
+          font-size: 0.85rem;
+          font-weight: 500;
+          border: 1px solid;
+        }
+
+        .status-badge.status-confirmed {
+          background: rgba(30, 190, 126, 0.2);
+          color: #1ebe7e;
+          border-color: rgba(30, 190, 126, 0.4);
+        }
+
+        .status-badge.status-declined {
+          background: rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .status-badge.status-no-response {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border-color: rgba(156, 163, 175, 0.4);
+        }
+
+        .status-badge.clickable {
+          cursor: pointer;
+          transition: all var(--transition);
+        }
+
+        .status-badge.clickable:hover {
+          opacity: 0.8;
+          transform: scale(1.05);
+        }
+
+        .status-cell {
+          position: relative;
+        }
+
+        .status-select {
+          padding: var(--space-xs) var(--space-sm);
+          border: 1px solid var(--brand);
+          border-radius: var(--radius-sm);
+          background: var(--text-light);
+          color: var(--text);
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          min-width: 120px;
+        }
+
+        .status-select:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+        }
+
+        .notes-cell {
+          max-width: 200px;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          cursor: help;
+        }
+
+        .actions {
+          display: flex;
+          gap: var(--space-xs);
+        }
+
+        .action-btn {
+          padding: var(--space-xs);
+          border: none;
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+        }
+
+        .action-btn.edit {
+          background: rgba(124, 92, 255, 0.2);
+          color: var(--brand);
+        }
+
+        .action-btn.edit:hover {
+          background: rgba(124, 92, 255, 0.3);
+        }
+
+        .action-btn.delete {
+          background: rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+        }
+
+        .action-btn.delete:hover {
+          background: rgba(239, 68, 68, 0.3);
+        }
+
+        .grid-view {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+          gap: var(--space-lg);
+        }
+
+        .guest-card {
+          padding: var(--space-lg);
+          border-radius: var(--radius-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-md);
+        }
+
+        .guest-card .card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+
+        .guest-info {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .guest-card .guest-name {
+          margin: 0;
+          font-size: 1.3rem;
+          color: var(--text);
+          font-weight: 600;
+        }
+
+        .guest-card .card-body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-md);
+        }
+
+        .contact-section {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .guest-card .contact-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+
+        .guest-card .contact-item i {
+          width: 14px;
+          color: var(--text-secondary);
+        }
+
+        .guest-card .contact-item a {
+          color: var(--brand);
+          text-decoration: none;
+        }
+
+        .guest-card .contact-item a:hover {
+          text-decoration: underline;
+        }
+
+        .guest-card .contact-item.whatsapp-link a {
+          color: #25d366;
+        }
+
+        .counts-section {
+          display: flex;
+          gap: var(--space-md);
+        }
+
+        .count-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          flex: 1;
+        }
+
+        .count-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: var(--radius-md);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.2rem;
+        }
+
+        .count-icon.adults {
+          background: rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+        }
+
+        .count-icon.kids {
+          background: rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
+        }
+
+        .count-info {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .count-label {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+        }
+
+        .count-value {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--text);
+        }
+
+        .notes-section {
+          padding: var(--space-sm);
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: var(--radius-md);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notes-header {
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+          margin-bottom: var(--space-xs);
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+
+        .notes-text {
+          margin: 0;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
+
+        .card-actions {
+          display: flex;
+          gap: var(--space-sm);
+          padding-top: var(--space-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-actions .action-btn {
+          flex: 1;
+          width: auto;
+          height: auto;
+          padding: var(--space-sm) var(--space-md);
+          gap: var(--space-xs);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .guests-page {
+            padding: var(--space-md);
+          }
+
+          .header-content {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .controls-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--space-md);
+          }
+
+          .filters {
+            flex-direction: column;
+          }
+
+          .view-controls {
+            align-self: stretch;
+          }
+
+          .view-toggle {
+            width: 100%;
+          }
+
+          .view-btn {
+            flex: 1;
+            justify-content: center;
+          }
+
+          .grid-view {
+            grid-template-columns: 1fr;
+          }
+
+          .table-container {
+            font-size: 0.9rem;
+          }
+
+          .guests-table th,
+          .guests-table td {
+            padding: var(--space-sm);
+          }
+
+          .counts-section {
+            flex-direction: column;
+            gap: var(--space-sm);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .header-info h1 {
+            font-size: 1.5rem;
+          }
+
+          .card-info .amount {
+            font-size: 1.2rem;
+          }
+
+          .guest-card .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space-sm);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
