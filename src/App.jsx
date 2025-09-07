@@ -8,6 +8,7 @@ import ExpenseTrackingPage from "./pages/ExpenseTrackingPage";
 import VendorsPage from "./pages/VendorsPage";
 import TasksPage from "./pages/TasksPage";
 import GuestsPage from "./pages/GuestsPage";
+import GiftsPage from "./pages/GiftsPage";
 import Sidebar from "./components/Layout/Sidebar";
 import Topbar from "./components/Layout/Topbar";
 import { ToastProvider } from "./components/Toast/Toast";
@@ -34,7 +35,7 @@ export default function App() {
               <Route path="/vendors" element={<VendorsPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/guests" element={<GuestsPage />} />
-              <Route path="/gifts" element={<div>מתנות - בפיתוח</div>} />
+              <Route path="/gifts" element={<GiftsPage />} />
               <Route path="/settings" element={<div>הגדרות - בפיתוח</div>} />
             </Routes>
           </div>
