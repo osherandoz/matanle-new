@@ -1,11 +1,11 @@
 # TODO Dashboard:
 
-# Add Vendor Modal - remove Address + Website from the modal
-#Add Guest Modal - change relative list to (Mom family, Dad Family, friends etc etc)
+# Add Vendor Modal - remove Address + Website from the modal [V]
+#Add Guest Modal - change relative list to (Mom family, Dad Family, friends etc etc) [V]
 # Make the "Share event" button usuable and create a logic.
 # Make "לכל הרשומות" button to navigate to the right path
 
-#create the gifts page []
+#create the gifts page [V]
 
 #add - guest lists [V]
 

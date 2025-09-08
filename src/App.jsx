@@ -1,46 +1,82 @@
-import React, { useState } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import "./theme/globals.css";
 import "./components/Layout/Layout.css";
+import LandingPage from "./pages/LandingPage";
 import Dashboard from "./components/Dashboard/Dashboard";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import ExpenseTrackingPage from "./pages/ExpenseTrackingPage";
-import VendorsPage from "./pages/VendorsPage";
 import TasksPage from "./pages/TasksPage";
 import GuestsPage from "./pages/GuestsPage";
 import GiftsPage from "./pages/GiftsPage";
-import Sidebar from "./components/Layout/Sidebar";
+import TopNavigation from "./components/Layout/TopNavigation";
 import Topbar from "./components/Layout/Topbar";
 import { ToastProvider } from "./components/Toast/Toast";
 import Breadcrumb from "./components/Breadcrumb/Breadcrumb";
 
+// Dashboard Layout Component
+const DashboardLayout = ({ children, title, subtitle }) => {
+  return (
+    <div className="app-container" dir="rtl">
+      <TopNavigation />
+      <main className="main-container">
+        <Topbar
+          title={title}
+          subtitle={subtitle}
+        />
+        <div className="page-content">
+          <Breadcrumb />
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+};
+
 export default function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   return (
     <ToastProvider>
-      <div className={`app${isSidebarOpen ? "" : " app--collapsed"}`} dir="rtl">
-        <Sidebar isOpen={isSidebarOpen} />
-        <main className="main">
-          <Topbar
-            isSidebarOpen={isSidebarOpen}
-            onToggleSidebar={() => setIsSidebarOpen(o => !o)}
-          />
-          <div className="main-content">
-            <Breadcrumb />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/event" element={<EventDetailsPage />} />
-              <Route path="/expenses" element={<ExpenseTrackingPage />} />
-              <Route path="/vendors" element={<VendorsPage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/guests" element={<GuestsPage />} />
-              <Route path="/gifts" element={<GiftsPage />} />
-              <Route path="/settings" element={<div>הגדרות - בפיתוח</div>} />
-            </Routes>
-          </div>
-        </main>
-      </div>
+      <Routes>
+        {/* Landing Page Route - No Dashboard Layout */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Dashboard and App Routes - With Dashboard Layout */}
+        <Route path="/dashboard" element={
+          <DashboardLayout title="דשבורד" subtitle="סקירה מהירה של כל מה שקורה סביב האירוע">
+            <Dashboard />
+          </DashboardLayout>
+        } />
+        <Route path="/event" element={
+          <DashboardLayout title="פרטי אירוע" subtitle="עריכה וניהול פרטי האירוע">
+            <EventDetailsPage />
+          </DashboardLayout>
+        } />
+        <Route path="/expenses" element={
+          <DashboardLayout title="מעקב הוצאות" subtitle="ניהול וניטור תקציב האירוע">
+            <ExpenseTrackingPage />
+          </DashboardLayout>
+        } />
+        <Route path="/tasks" element={
+          <DashboardLayout title="משימות" subtitle="ניהול משימות וזמנים">
+            <TasksPage />
+          </DashboardLayout>
+        } />
+        <Route path="/guests" element={
+          <DashboardLayout title="מוזמנים" subtitle="ניהול רשימת המוזמנים">
+            <GuestsPage />
+          </DashboardLayout>
+        } />
+        <Route path="/gifts" element={
+          <DashboardLayout title="מתנות" subtitle="ניהול מתנות לאורחים">
+            <GiftsPage />
+          </DashboardLayout>
+        } />
+        <Route path="/settings" element={
+          <DashboardLayout title="הגדרות" subtitle="הגדרות מערכת וחשבון">
+            <div>הגדרות - בפיתוח</div>
+          </DashboardLayout>
+        } />
+      </Routes>
     </ToastProvider>
   );
 }

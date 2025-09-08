@@ -42,15 +42,12 @@ const Navbar = () => {
         <div className="navbar-actions desktop-actions">
           <a href="/dashboard" className="btn btn-outline">
             <span>דשבורד</span>
-            <i className="fa-solid fa-tachometer-alt"></i>
           </a>
           <a href="/register" className="btn btn-primary">
             <span>הרשמה</span>
-            <i className="fa-solid fa-user-plus"></i>
           </a>
           <a href="/login" className="btn btn-secondary">
             <span>התחברות</span>
-            <i className="fa-solid fa-right-to-bracket"></i>
           </a>
         </div>
       </nav>

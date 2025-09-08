@@ -1,9 +1,69 @@
 /* ===================================== */
 /* Modern Intro Section Design */
+
+/* Dark Theme Intro Section */
+.dark-theme .intro-section {
+  background: rgba(18, 18, 18, 0.8) !important;
+  color: #ffffff !important;
+  position: relative;
+  backdrop-filter: blur(10px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-theme .intro-header h2 {
+  color: #ffffff !important;
+}
+
+.dark-theme .intro-header .section-subtitle {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.dark-theme .step-number {
+  background: linear-gradient(135deg, #2a2a2a, #3a3a3a) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme .step-content h3 {
+  color: #ffffff !important;
+}
+
+.dark-theme .step-content p {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark-theme .step-item {
+  background: rgba(20, 20, 20, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-theme .step-item:hover {
+  background: rgba(25, 25, 25, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-4px) !important;
+}
+
+/* Force override for intro step items */
+.landing-page.dark-theme .step-item {
+  background: rgba(20, 20, 20, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.landing-page.dark-theme .step-item:hover {
+  background: rgba(25, 25, 25, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-4px) !important;
+}
 /* ===================================== */
 .intro-section {
   width: 100%;
-  padding: var(--space-3xl) var(--space-xl);
+  padding: var(--space-xl) 5% !important;
   background: var(--background-light);
   box-sizing: border-box;
   text-align: center;
@@ -23,7 +83,7 @@
 }
 
 .intro-content {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   position: relative;
   z-index: 2;
@@ -33,7 +93,7 @@
 /* Header Section                    */
 /* ===================================== */
 .intro-header {
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .intro-badge {
@@ -134,8 +194,8 @@
 }
 
 .step-number {
-  width: 70px;
-  height: 70px;
+  width: 42px !important;
+  height: 42px !important;
   background: var(--gradient-primary);
   color: var(--text-white);
   border-radius: 50%;
@@ -197,7 +257,7 @@
 /* Large screens (34-inch and similar) */
 @media (min-width: 2560px) {
   .intro-section {
-    padding: 10rem 4rem;
+    padding: 6rem 4rem !important;
   }
   
   .intro-content {
@@ -243,7 +303,7 @@
 /* Laptop screens */
 @media (max-width: 1366px) {
   .intro-section {
-    padding: 6rem 2rem;
+    padding: 3.6rem 2rem !important;
   }
   
   .intro-content {
@@ -270,7 +330,7 @@
 /* Tablet screens */
 @media (max-width: 992px) {
   .intro-section {
-    padding: 5rem 1.5rem;
+    padding: 3rem 1.5rem !important;
   }
   
   .intro-title {
@@ -298,7 +358,7 @@
 
 @media (max-width: 768px) {
   .intro-section {
-    padding: 4rem 1rem;
+    padding: 2.4rem 1rem !important;
   }
   
   .intro-title {
@@ -342,7 +402,7 @@
 
 @media (max-width: 480px) {
   .intro-section {
-    padding: 3rem 1rem;
+    padding: 1.8rem 1rem !important;
   }
   
   .intro-title {

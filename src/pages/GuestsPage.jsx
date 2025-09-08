@@ -97,6 +97,14 @@ export default function GuestsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStatus, setEditingStatus] = useState(null); // ID of guest whose status is being edited
+  const [newGuest, setNewGuest] = useState({
+    fullName: "",
+    phone: "",
+    adults: 1,
+    kids: 0,
+    relative: "צד החתן",
+    notes: ""
+  });
 
   // Filter and sort guests
   const filteredGuests = guests
@@ -171,6 +179,82 @@ export default function GuestsPage() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [editingStatus]);
+
+  const handleAddGuest = (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!newGuest.fullName.trim() || !newGuest.phone.trim()) {
+      alert("אנא מלא את השם המלא ומספר הטלפון");
+      return;
+    }
+
+    // Validate phone number (basic Israeli phone validation)
+    const phoneRegex = /^(\+972|0)?[2-9]\d{1,2}-?\d{7}$/;
+    if (!phoneRegex.test(newGuest.phone.replace(/\s/g, ''))) {
+      alert("אנא הכנס מספר טלפון תקין");
+      return;
+    }
+
+    // Create new guest object
+    const guest = {
+      id: Math.max(...guests.map(g => g.id)) + 1,
+      fullName: newGuest.fullName.trim(),
+      phone: newGuest.phone.trim(),
+      adults: parseInt(newGuest.adults),
+      kids: parseInt(newGuest.kids),
+      relative: newGuest.relative,
+      notes: newGuest.notes.trim(),
+      status: "לא החזיר תשובה"
+    };
+
+    // Add to guests list
+    setGuests(prevGuests => [...prevGuests, guest]);
+    
+    // Reset form and close modal
+    setNewGuest({
+      fullName: "",
+      phone: "",
+      adults: 1,
+      kids: 0,
+      relative: "צד החתן",
+      notes: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleCancelAdd = () => {
+    setNewGuest({
+      fullName: "",
+      phone: "",
+      adults: 1,
+      kids: 0,
+      relative: "צד החתן",
+      notes: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewGuest(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle keyboard shortcuts for modal
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && showAddForm) {
+        handleCancelAdd();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showAddForm]);
 
   const getWhatsAppLink = (phone) => {
     const cleanPhone = phone.replace(/[-\s]/g, '');
@@ -507,6 +591,127 @@ export default function GuestsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Guest Modal */}
+      {showAddForm && (
+        <div className="modal-overlay" onClick={handleCancelAdd}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <i className="fa-solid fa-user-plus"></i>
+                הוספת מוזמן חדש
+              </h2>
+              <button className="modal-close" onClick={handleCancelAdd}>
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddGuest} className="guest-form">
+              <div className="form-group">
+                <label htmlFor="guestName">
+                  <i className="fa-solid fa-user"></i>
+                  שם מלא *
+                </label>
+                <input
+                  id="guestName"
+                  type="text"
+                  value={newGuest.fullName}
+                  onChange={(e) => handleInputChange("fullName", e.target.value)}
+                  placeholder="לדוגמה: יוסי כהן"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="guestPhone">
+                  <i className="fa-solid fa-phone"></i>
+                  מספר טלפון *
+                </label>
+                <input
+                  id="guestPhone"
+                  type="tel"
+                  value={newGuest.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="052-1234567"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="adultsCount">
+                    <i className="fa-solid fa-user"></i>
+                    מספר מבוגרים
+                  </label>
+                  <input
+                    id="adultsCount"
+                    type="number"
+                    min="0"
+                    value={newGuest.adults}
+                    onChange={(e) => handleInputChange("adults", e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="kidsCount">
+                    <i className="fa-solid fa-child"></i>
+                    מספר ילדים
+                  </label>
+                  <input
+                    id="kidsCount"
+                    type="number"
+                    min="0"
+                    value={newGuest.kids}
+                    onChange={(e) => handleInputChange("kids", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="guestRelative">
+                  <i className="fa-solid fa-users"></i>
+                  קבוצה
+                </label>
+                <select
+                  id="guestRelative"
+                  value={newGuest.relative}
+                  onChange={(e) => handleInputChange("relative", e.target.value)}
+                >
+                  <option value="צד החתן">צד החתן</option>
+                  <option value="צד הכלה">צד הכלה</option>
+                  <option value="משפחה">משפחה</option>
+                  <option value="חברים">חברים</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="guestNotes">
+                  <i className="fa-solid fa-sticky-note"></i>
+                  הערות (אופציונלי)
+                </label>
+                <textarea
+                  id="guestNotes"
+                  value={newGuest.notes}
+                  onChange={(e) => handleInputChange("notes", e.target.value)}
+                  placeholder="הערות מיוחדות, דרישות תזונתיות, נגישות וכו'"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary">
+                  <i className="fa-solid fa-user-plus"></i>
+                  הוסף מוזמן
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
+                  <i className="fa-solid fa-times"></i>
+                  ביטול
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .guests-page {
@@ -1095,6 +1300,152 @@ export default function GuestsPage() {
           gap: var(--space-xs);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: var(--space-md);
+        }
+
+        .modal-content {
+          background: var(--bg-secondary);
+          border-radius: var(--radius-lg);
+          width: 100%;
+          max-width: 600px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-lg);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: var(--space-xs);
+          border-radius: var(--radius-sm);
+          transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .guest-form {
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-md);
+        }
+
+        .form-group label {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .form-group label i {
+          width: 16px;
+          color: var(--brand);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: var(--space-sm) var(--space-md);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text);
+          font-size: 1rem;
+          transition: all var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .form-group textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        .form-actions {
+          display: flex;
+          gap: var(--space-md);
+          padding-top: var(--space-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions .btn {
+          flex: 1;
+          justify-content: center;
+        }
+
+        .btn-secondary {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(156, 163, 175, 0.3);
+          color: var(--text);
+          transform: translateY(-1px);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .guests-page {
@@ -1165,6 +1516,31 @@ export default function GuestsPage() {
             flex-direction: column;
             align-items: flex-start;
             gap: var(--space-sm);
+          }
+
+          .modal-overlay {
+            padding: var(--space-sm);
+          }
+
+          .modal-content {
+            max-height: 95vh;
+          }
+
+          .modal-header {
+            padding: var(--space-md);
+          }
+
+          .guest-form {
+            padding: var(--space-md);
+          }
+
+          .form-row {
+            grid-template-columns: 1fr;
+            gap: var(--space-sm);
+          }
+
+          .form-actions {
+            flex-direction: column;
           }
         }
       `}</style>

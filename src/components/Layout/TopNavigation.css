@@ -1,0 +1,160 @@
+/* Top Navigation Styles */
+.top-navigation {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  position: static;
+  direction: rtl;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 90%;
+  margin: 0 auto;
+  height: 70px;
+  padding: 0 20px;
+}
+
+/* Brand Section */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.nav-brand .logo {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.3), rgba(0, 212, 255, 0.2));
+  font-size: 18px;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+
+/* Navigation Links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 12px;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background: rgba(124, 92, 255, 0.22);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  opacity: 1;
+  color: var(--text);
+}
+
+.nav-link i {
+  font-size: 16px;
+  width: 16px;
+  text-align: center;
+}
+
+/* Right Actions */
+.nav-actions {
+  min-width: 150px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .nav-container {
+    width: 90%;
+    padding: 0 16px;
+  }
+  
+  .nav-brand,
+  .nav-actions {
+    min-width: 120px;
+  }
+  
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .brand-name {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .nav-links {
+    gap: 4px;
+  }
+  
+  .nav-link {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .nav-link span {
+    display: none;
+  }
+  
+  .nav-link i {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav-container {
+    width: 90%;
+    padding: 0 12px;
+    height: 60px;
+  }
+  
+  .nav-brand,
+  .nav-actions {
+    min-width: 80px;
+  }
+  
+  .brand-name {
+    display: none;
+  }
+  
+  .nav-links {
+    gap: 2px;
+  }
+  
+  .nav-link {
+    padding: 6px 8px;
+  }
+}

@@ -5,7 +5,7 @@ const TeamSection = () => {
   return (
     <section className="team-section" id="about-us">
       <div className="team-header">
-        <h2 className="section-title">מי אנחנו?</h2>
+        <h2 className="section-title">הצוות שמאחורי מתנל'ה</h2>
       </div>
 
       <div className="team-grid">
@@ -18,7 +18,7 @@ const TeamSection = () => {
           <div className="card-overlay">
             <div className="member-info">
               <h3>אושר</h3>
-              <p>מפתח המוצר</p>
+              <p>מפתח ומייסד שותף</p>
             </div>
             <div className="social-links">
               <a href="#" aria-label="Facebook של אושר">
@@ -40,7 +40,7 @@ const TeamSection = () => {
           <div className="card-overlay">
             <div className="member-info">
               <h3>בר</h3>
-              <p>מייסדת</p>
+              <p>מייסדת ומנכ"לית</p>
             </div>
             <div className="social-links">
               <a href="#" aria-label="Facebook של בר">
@@ -56,9 +56,8 @@ const TeamSection = () => {
 
       <div className="team-description">
         <p className="lead">
-          הצוות שלנו מאמין שניהול אירועים צריך להיות פשוט, 
-          מהנה ומקצועי. אנחנו כאן כדי לשנות את הדרך 
-          שבה מנהלים אירועים בישראל.
+          צוות צעיר ומנוסה שמביא חדשנות טכנולוגית לעולם ניהול האירועים. 
+          אנחנו מאמינים בפשטות, יעילות ובחוויית משתמש מושלמת.
         </p>
       </div>
     </section>

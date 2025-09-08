@@ -112,6 +112,12 @@ export default function GiftsPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [newGift, setNewGift] = useState({
+    name: "",
+    purchaseLink: "",
+    price: "",
+    image: ""
+  });
 
   // Filter and sort gifts
   const filteredGifts = gifts
@@ -223,6 +229,73 @@ export default function GiftsPage() {
       )
     );
   };
+
+  const handleAddGift = (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
+      alert("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    // Create new gift object
+    const gift = {
+      id: Math.max(...gifts.map(g => g.id)) + 1,
+      name: newGift.name.trim(),
+      purchaseLink: newGift.purchaseLink.trim(),
+      price: parseInt(newGift.price),
+      image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name),
+      reservedBy: null,
+      reservedById: null,
+      isReserved: false,
+      isPurchased: false,
+      reservedDate: null
+    };
+
+    // Add to gifts list
+    setGifts(prevGifts => [...prevGifts, gift]);
+    
+    // Reset form and close modal
+    setNewGift({
+      name: "",
+      purchaseLink: "",
+      price: "",
+      image: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleCancelAdd = () => {
+    setNewGift({
+      name: "",
+      purchaseLink: "",
+      price: "",
+      image: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewGift(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && showAddForm) {
+        handleCancelAdd();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showAddForm]);
 
   return (
     <div className="gifts-page">
@@ -546,6 +619,99 @@ export default function GiftsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Gift Modal */}
+      {showAddForm && (
+        <div className="modal-overlay" onClick={handleCancelAdd}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <i className="fa-solid fa-plus"></i>
+                הוספת מתנה חדשה
+              </h2>
+              <button className="modal-close" onClick={handleCancelAdd}>
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddGift} className="gift-form">
+              <div className="form-group">
+                <label htmlFor="giftName">
+                  <i className="fa-solid fa-gift"></i>
+                  שם המתנה *
+                </label>
+                <input
+                  id="giftName"
+                  type="text"
+                  value={newGift.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="לדוגמה: מכונת קפה דלונגי"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="giftPrice">
+                  <i className="fa-solid fa-shekel-sign"></i>
+                  מחיר המתנה *
+                </label>
+                <input
+                  id="giftPrice"
+                  type="number"
+                  min="1"
+                  value={newGift.price}
+                  onChange={(e) => handleInputChange("price", e.target.value)}
+                  placeholder="299"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="purchaseLink">
+                  <i className="fa-solid fa-link"></i>
+                  קישור לרכישה *
+                </label>
+                <input
+                  id="purchaseLink"
+                  type="url"
+                  value={newGift.purchaseLink}
+                  onChange={(e) => handleInputChange("purchaseLink", e.target.value)}
+                  placeholder="https://www.example.com/product"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="giftImage">
+                  <i className="fa-solid fa-image"></i>
+                  תמונת המתנה (אופציונלי)
+                </label>
+                <input
+                  id="giftImage"
+                  type="url"
+                  value={newGift.image}
+                  onChange={(e) => handleInputChange("image", e.target.value)}
+                  placeholder="https://www.example.com/image.jpg"
+                />
+                <small className="form-help">
+                  אם לא תוסיף תמונה, תיווצר תמונה אוטומטית עם שם המתנה
+                </small>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary">
+                  <i className="fa-solid fa-plus"></i>
+                  הוסף מתנה
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
+                  <i className="fa-solid fa-times"></i>
+                  ביטול
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .gifts-page {
@@ -1150,6 +1316,142 @@ export default function GiftsPage() {
           padding: var(--space-xs) var(--space-sm);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: var(--space-md);
+        }
+
+        .modal-content {
+          background: var(--bg-secondary);
+          border-radius: var(--radius-lg);
+          width: 100%;
+          max-width: 500px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-lg);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: var(--space-xs);
+          border-radius: var(--radius-sm);
+          transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .gift-form {
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .form-group label {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .form-group label i {
+          width: 16px;
+          color: var(--brand);
+        }
+
+        .form-group input {
+          padding: var(--space-sm) var(--space-md);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text);
+          font-size: 1rem;
+          transition: all var(--transition);
+        }
+
+        .form-group input:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .form-help {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          font-style: italic;
+        }
+
+        .form-actions {
+          display: flex;
+          gap: var(--space-md);
+          padding-top: var(--space-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions .btn {
+          flex: 1;
+          justify-content: center;
+        }
+
+        .btn-secondary {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(156, 163, 175, 0.3);
+          color: var(--text);
+          transform: translateY(-1px);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .gifts-page {
@@ -1217,6 +1519,26 @@ export default function GiftsPage() {
             flex-direction: column;
             align-items: flex-start;
             gap: var(--space-sm);
+          }
+
+          .modal-overlay {
+            padding: var(--space-sm);
+          }
+
+          .modal-content {
+            max-height: 95vh;
+          }
+
+          .modal-header {
+            padding: var(--space-md);
+          }
+
+          .gift-form {
+            padding: var(--space-md);
+          }
+
+          .form-actions {
+            flex-direction: column;
           }
         }
       `}</style>

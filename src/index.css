@@ -68,10 +68,14 @@
 }
 
 /* --- Global Body Styles --- */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   margin: 0;
   padding: 0;
-  padding-top: 80px;
   min-width: 320px;
   min-height: 100vh;
   background: var(--gradient-background);
@@ -85,6 +89,17 @@ html {
   height: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+/* אפס רווחים עליונים לא רצויים סביב הניו-בר */
+header, .navbar, .app-header, .navbar-container, .top-navigation {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* הסרת התאמה קודמת לניו-בר מוצמד */
+main, .page, .content, .main-container, .page-content {
+  padding-top: 0 !important;
 }
 
 /* --- Enhanced Typography --- */
@@ -360,7 +375,6 @@ button:focus-visible,
 /* Large screens (34-inch and similar) */
 @media (min-width: 2560px) {
   body {
-    padding-top: 90px;
     font-size: 18px;
   }
   
@@ -399,7 +413,6 @@ button:focus-visible,
 /* Mobile screens */
 @media (max-width: 768px) {
   body {
-    padding-top: 70px;
     font-size: 14px;
   }
   
@@ -420,7 +433,6 @@ button:focus-visible,
 
 @media (max-width: 480px) {
   body {
-    padding-top: 65px;
     font-size: 13px;
   }
   

@@ -6,11 +6,9 @@ const Breadcrumb = () => {
   
   const getBreadcrumbs = (pathname) => {
     const routes = {
-      '/': { name: 'דשבורד', icon: 'fa-gauge' },
       '/dashboard': { name: 'דשבורד', icon: 'fa-gauge' },
       '/event': { name: 'פרטי אירוע', icon: 'fa-calendar-days' },
       '/expenses': { name: 'מעקב הוצאות', icon: 'fa-chart-line' },
-      '/vendors': { name: 'ספקים', icon: 'fa-truck-fast' },
       '/tasks': { name: 'משימות', icon: 'fa-list-check' },
       '/guests': { name: 'מוזמנים', icon: 'fa-users' },
       '/gifts': { name: 'מתנות', icon: 'fa-gifts' },
@@ -19,8 +17,8 @@ const Breadcrumb = () => {
 
     const breadcrumbs = [];
     
-    // Always add home
-    if (pathname !== '/' && pathname !== '/dashboard') {
+    // Always add home (dashboard) if not on dashboard
+    if (pathname !== '/dashboard') {
       breadcrumbs.push({
         path: '/dashboard',
         name: 'דשבורד',

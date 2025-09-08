@@ -7,11 +7,11 @@ const IntroSection = () => {
       <div className="intro-content">
         <div className="intro-header">
           <h2 className="intro-title">
-            איך זה עובד?
+            הדרך החכמה לנהל אירועים
           </h2>
           <p className="intro-tagline lead">
-            מתנל'ה היא הפלטפורמה הראשונה בישראל שמאחדת את כל הצרכים 
-            של ניהול אירועים במקום אחד - RSVP, מתנות, תזמון וארגון.
+            מתנל'ה מביאה לכם חוויית ניהול אירועים מהפכנית. 
+            פשוט, מהיר ויעיל - בדיוק כמו שצריך להיות.
           </p>
         </div>
         
@@ -19,24 +19,24 @@ const IntroSection = () => {
           <div className="step-item">
             <div className="step-number">1</div>
             <div className="step-content">
-              <h3>יוצרים אירוע</h3>
-              <p>הזן פרטים בסיסיים וקבל קישור ייחודי לאירוע</p>
+              <h3>הקמה מהירה</h3>
+              <p>יצירת אירוע חדש תוך דקות ספורות עם כל הפרטים החשובים</p>
             </div>
           </div>
           
           <div className="step-item">
             <div className="step-number">2</div>
             <div className="step-content">
-              <h3>שתף עם האורחים</h3>
-              <p>שתף את האירוע עם האורחים, עקוב אחרי אישורי ההגעה שלהם</p>
+              <h3>ניהול חכם</h3>
+              <p>מעקב אחר אורחים, מתנות ומשימות במקום אחד ונוח</p>
             </div>
           </div>
           
           <div className="step-item">
             <div className="step-number">3</div>
             <div className="step-content">
-              <h3>נהל מתנות ופרטים</h3>
-              <p>ארגן מתנות, עקוב אחר פרטים וקבל עדכונים בזמן אמת</p>
+              <h3>תוצאות מושלמות</h3>
+              <p>אירוע מאורגן ומוצלח שישאיר רושם בלתי נשכח</p>
             </div>
           </div>
         </div>

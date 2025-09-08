@@ -76,6 +76,14 @@ export default function ExpenseTrackingPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [newExpense, setNewExpense] = useState({
+    category: "מקום",
+    description: "",
+    vendor: "",
+    amount: "",
+    date: new Date().toISOString().split('T')[0],
+    paymentMethod: "אשראי"
+  });
 
   // Filter and sort expenses
   const filteredExpenses = expenses
@@ -137,6 +145,68 @@ export default function ExpenseTrackingPage() {
       case "שמלה": return "fa-shirt";
       default: return "fa-receipt";
     }
+  };
+
+  const handleAddExpense = (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!newExpense.description.trim() || !newExpense.vendor.trim() || !newExpense.amount || !newExpense.date) {
+      alert("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    // Amount validation
+    const amount = parseFloat(newExpense.amount);
+    if (amount <= 0) {
+      alert("אנא הכנס סכום תקין");
+      return;
+    }
+
+    // Create new expense object
+    const expense = {
+      id: Math.max(...expenses.map(e => e.id)) + 1,
+      category: newExpense.category,
+      description: newExpense.description.trim(),
+      vendor: newExpense.vendor.trim(),
+      amount: amount,
+      date: newExpense.date,
+      status: "בהמתנה",
+      paymentMethod: newExpense.paymentMethod
+    };
+
+    // Add to expenses list
+    setExpenses(prevExpenses => [...prevExpenses, expense]);
+    
+    // Reset form and close modal
+    setNewExpense({
+      category: "מקום",
+      description: "",
+      vendor: "",
+      amount: "",
+      date: new Date().toISOString().split('T')[0],
+      paymentMethod: "אשראי"
+    });
+    setShowAddForm(false);
+  };
+
+  const handleCancelAdd = () => {
+    setNewExpense({
+      category: "מקום",
+      description: "",
+      vendor: "",
+      amount: "",
+      date: new Date().toISOString().split('T')[0],
+      paymentMethod: "אשראי"
+    });
+    setShowAddForm(false);
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewExpense(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -369,6 +439,138 @@ export default function ExpenseTrackingPage() {
           </div>
         )}
       </div>
+
+      {/* Add Expense Modal */}
+      {showAddForm && (
+        <div className="modal-overlay" onClick={handleCancelAdd}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <i className="fa-solid fa-plus"></i>
+                הוספת הוצאה חדשה
+              </h2>
+              <button className="modal-close" onClick={handleCancelAdd}>
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddExpense} className="expense-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="expenseCategory">
+                    <i className="fa-solid fa-tag"></i>
+                    קטגוריה
+                  </label>
+                  <select
+                    id="expenseCategory"
+                    value={newExpense.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                  >
+                    <option value="מקום">מקום</option>
+                    <option value="צילום">צילום</option>
+                    <option value="קייטרינג">קייטרינג</option>
+                    <option value="פרחים">פרחים</option>
+                    <option value="בידור">בידור</option>
+                    <option value="שמלה">שמלה</option>
+                    <option value="אחר">אחר</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="expenseAmount">
+                    <i className="fa-solid fa-shekel-sign"></i>
+                    סכום *
+                  </label>
+                  <input
+                    id="expenseAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={newExpense.amount}
+                    onChange={(e) => handleInputChange("amount", e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="expenseDescription">
+                  <i className="fa-solid fa-align-left"></i>
+                  תיאור ההוצאה *
+                </label>
+                <input
+                  id="expenseDescription"
+                  type="text"
+                  value={newExpense.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  placeholder="לדוגמה: הזמנת אולם לחתונה"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="expenseVendor">
+                  <i className="fa-solid fa-store"></i>
+                  ספק *
+                </label>
+                <input
+                  id="expenseVendor"
+                  type="text"
+                  value={newExpense.vendor}
+                  onChange={(e) => handleInputChange("vendor", e.target.value)}
+                  placeholder="שם הספק או העסק"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="expenseDate">
+                    <i className="fa-solid fa-calendar"></i>
+                    תאריך *
+                  </label>
+                  <input
+                    id="expenseDate"
+                    type="date"
+                    value={newExpense.date}
+                    onChange={(e) => handleInputChange("date", e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="expensePaymentMethod">
+                    <i className="fa-solid fa-credit-card"></i>
+                    אמצעי תשלום
+                  </label>
+                  <select
+                    id="expensePaymentMethod"
+                    value={newExpense.paymentMethod}
+                    onChange={(e) => handleInputChange("paymentMethod", e.target.value)}
+                  >
+                    <option value="אשראי">אשראי</option>
+                    <option value="מזומן">מזומן</option>
+                    <option value="העברה">העברה</option>
+                    <option value="צ'ק">צ'ק</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary">
+                  <i className="fa-solid fa-plus"></i>
+                  הוסף הוצאה
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
+                  <i className="fa-solid fa-times"></i>
+                  ביטול
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .expense-tracking-page {
@@ -783,6 +985,144 @@ export default function ExpenseTrackingPage() {
           gap: var(--space-xs);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: var(--space-md);
+        }
+
+        .modal-content {
+          background: var(--bg-secondary);
+          border-radius: var(--radius-lg);
+          width: 100%;
+          max-width: 600px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-lg);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: var(--space-xs);
+          border-radius: var(--radius-sm);
+          transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .expense-form {
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-md);
+        }
+
+        .form-group label {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .form-group label i {
+          width: 16px;
+          color: var(--brand);
+        }
+
+        .form-group input,
+        .form-group select {
+          padding: var(--space-sm) var(--space-md);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text);
+          font-size: 1rem;
+          transition: all var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .form-actions {
+          display: flex;
+          gap: var(--space-md);
+          padding-top: var(--space-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions .btn {
+          flex: 1;
+          justify-content: center;
+        }
+
+        .btn-secondary {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(156, 163, 175, 0.3);
+          color: var(--text);
+          transform: translateY(-1px);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .expense-tracking-page {
@@ -842,6 +1182,31 @@ export default function ExpenseTrackingPage() {
 
           .card-info .amount {
             font-size: 1.2rem;
+          }
+
+          .modal-overlay {
+            padding: var(--space-sm);
+          }
+
+          .modal-content {
+            max-height: 95vh;
+          }
+
+          .modal-header {
+            padding: var(--space-md);
+          }
+
+          .expense-form {
+            padding: var(--space-md);
+          }
+
+          .form-row {
+            grid-template-columns: 1fr;
+            gap: var(--space-sm);
+          }
+
+          .form-actions {
+            flex-direction: column;
           }
         }
       `}</style>

@@ -64,6 +64,13 @@ export default function VendorsPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [newVendor, setNewVendor] = useState({
+    name: "",
+    category: "מקום",
+    phone: "",
+    email: "",
+    address: ""
+  });
 
   // Filter and sort vendors
   const filteredVendors = vendors
@@ -117,6 +124,65 @@ export default function VendorsPage() {
       case "אופנה": return "fa-shirt";
       default: return "fa-store";
     }
+  };
+
+  const handleAddVendor = (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!newVendor.name.trim() || !newVendor.phone.trim() || !newVendor.email.trim()) {
+      alert("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newVendor.email)) {
+      alert("אנא הכנס כתובת אימייל תקינה");
+      return;
+    }
+
+    // Create new vendor object
+    const vendor = {
+      id: Math.max(...vendors.map(v => v.id)) + 1,
+      name: newVendor.name.trim(),
+      category: newVendor.category,
+      phone: newVendor.phone.trim(),
+      email: newVendor.email.trim(),
+      address: newVendor.address.trim(),
+      status: "בהמתנה"
+    };
+
+    // Add to vendors list
+    setVendors(prevVendors => [...prevVendors, vendor]);
+    
+    // Reset form and close modal
+    setNewVendor({
+      name: "",
+      category: "מקום",
+      phone: "",
+      email: "",
+      address: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleCancelAdd = () => {
+    setNewVendor({
+      name: "",
+      category: "מקום",
+      phone: "",
+      email: "",
+      address: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewVendor(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
 
@@ -335,6 +401,117 @@ export default function VendorsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Vendor Modal */}
+      {showAddForm && (
+        <div className="modal-overlay" onClick={handleCancelAdd}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <i className="fa-solid fa-plus"></i>
+                הוספת ספק חדש
+              </h2>
+              <button className="modal-close" onClick={handleCancelAdd}>
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddVendor} className="vendor-form">
+              <div className="form-group">
+                <label htmlFor="vendorName">
+                  <i className="fa-solid fa-store"></i>
+                  שם הספק *
+                </label>
+                <input
+                  id="vendorName"
+                  type="text"
+                  value={newVendor.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="לדוגמה: אולם אגדות"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="vendorCategory">
+                    <i className="fa-solid fa-tag"></i>
+                    קטגוריה
+                  </label>
+                  <select
+                    id="vendorCategory"
+                    value={newVendor.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                  >
+                    <option value="מקום">מקום</option>
+                    <option value="צילום">צילום</option>
+                    <option value="קייטרינג">קייטרינג</option>
+                    <option value="פרחים">פרחים</option>
+                    <option value="בידור">בידור</option>
+                    <option value="אופנה">אופנה</option>
+                    <option value="אחר">אחר</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="vendorPhone">
+                    <i className="fa-solid fa-phone"></i>
+                    מספר טלפון *
+                  </label>
+                  <input
+                    id="vendorPhone"
+                    type="tel"
+                    value={newVendor.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    placeholder="03-1234567"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="vendorEmail">
+                  <i className="fa-solid fa-envelope"></i>
+                  כתובת אימייל *
+                </label>
+                <input
+                  id="vendorEmail"
+                  type="email"
+                  value={newVendor.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="info@example.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="vendorAddress">
+                  <i className="fa-solid fa-location-dot"></i>
+                  כתובת (אופציונלי)
+                </label>
+                <textarea
+                  id="vendorAddress"
+                  value={newVendor.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="כתובת הספק..."
+                  rows="2"
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary">
+                  <i className="fa-solid fa-plus"></i>
+                  הוסף ספק
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
+                  <i className="fa-solid fa-times"></i>
+                  ביטול
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .vendors-page {
@@ -775,6 +952,152 @@ export default function VendorsPage() {
           gap: var(--space-xs);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: var(--space-md);
+        }
+
+        .modal-content {
+          background: var(--bg-secondary);
+          border-radius: var(--radius-lg);
+          width: 100%;
+          max-width: 600px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-lg);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: var(--space-xs);
+          border-radius: var(--radius-sm);
+          transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text);
+        }
+
+        .vendor-form {
+          padding: var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-lg);
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-md);
+        }
+
+        .form-group label {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+        }
+
+        .form-group label i {
+          width: 16px;
+          color: var(--brand);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: var(--space-sm) var(--space-md);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-md);
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text);
+          font-size: 1rem;
+          transition: all var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .form-group textarea {
+          resize: vertical;
+          min-height: 60px;
+        }
+
+        .form-actions {
+          display: flex;
+          gap: var(--space-md);
+          padding-top: var(--space-md);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions .btn {
+          flex: 1;
+          justify-content: center;
+        }
+
+        .btn-secondary {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(156, 163, 175, 0.3);
+          color: var(--text);
+          transform: translateY(-1px);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .vendors-page {
@@ -834,6 +1157,31 @@ export default function VendorsPage() {
 
           .card-info .amount {
             font-size: 1.2rem;
+          }
+
+          .modal-overlay {
+            padding: var(--space-sm);
+          }
+
+          .modal-content {
+            max-height: 95vh;
+          }
+
+          .modal-header {
+            padding: var(--space-md);
+          }
+
+          .vendor-form {
+            padding: var(--space-md);
+          }
+
+          .form-row {
+            grid-template-columns: 1fr;
+            gap: var(--space-sm);
+          }
+
+          .form-actions {
+            flex-direction: column;
           }
         }
       `}</style>

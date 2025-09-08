@@ -23,14 +23,15 @@ body {
 
 /* --- Modern Container System --- */
 .container {
-  max-width: 1200px;
+  width: 90%;
   margin: 0 auto;
-  padding: 0 var(--space-lg);
+  padding: 0;
 }
 
 .container-fluid {
-  width: 100%;
-  padding: 0 var(--space-lg);
+  width: 90%;
+  margin: 0 auto;
+  padding: 0;
 }
 
 /* --- Section Spacing --- */

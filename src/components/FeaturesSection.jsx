@@ -5,10 +5,10 @@ const FeaturesSection = () => {
   return (
     <section className="features-section" id="why-us">
       <div className="features-header">
-        <h2 className="section-title">למה מתנל'ה?</h2>
+        <h2 className="section-title">היתרונות שלנו</h2>
         <p className="section-description">
-          פלטפורמה חכמה שמשנה את הדרך שבה מנהלים אירועים. 
-          פשוט, מהיר ומקצועי - בדיוק כמו שצריך.
+          חוויית ניהול אירועים מתקדמת שחוסכת לכם זמן ומביאה תוצאות מושלמות. 
+          גלו מה הופך את מתנל'ה לבחירה הטובה ביותר.
         </p>
       </div>
 
@@ -17,10 +17,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-users"></i>
           </div>
-          <h3 className="card-title">ניהול RSVP חכם</h3>
+          <h3 className="card-title">ניהול אורחים מתקדם</h3>
           <p className="card-text">
-            ארגן את רשימת האורחים בקלות. קבל אישורי השתתפות, 
-            עקוב אחר תשובות ומנע בלבול. הכל במקום אחד.
+            מערכת RSVP חכמה עם מעקב בזמן אמת ותזכורות אוטומטיות.
           </p>
         </div>
 
@@ -28,10 +27,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-gift"></i>
           </div>
-          <h3 className="card-title">מתנות לאורחים</h3>
+          <h3 className="card-title">מתנות ומעקב חכם</h3>
           <p className="card-text">
-            ארגן מתנות בצורה חכמה. תן לאורחים לבחור מתנות, 
-            עקוב אחר בחירות ומנע כפילויות בקלות.
+            ניהול מתנות מתקדם עם מניעת כפילויות ומעקב אוטומטי.
           </p>
         </div>
 
@@ -39,10 +37,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-calendar-check"></i>
           </div>
-          <h3 className="card-title">תזמון מושלם</h3>
+          <h3 className="card-title">תכנון ותזמון</h3>
           <p className="card-text">
-            תכנן את לוח הזמנים של האירוע. קבל תזכורות אוטומטיות 
-            ועקוב אחר כל המשימות בקלות.
+            לוח זמנים אינטראקטיבי עם תזכורות חכמות ומעקב משימות.
           </p>
         </div>
 
@@ -50,10 +47,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-chart-line"></i>
           </div>
-          <h3 className="card-title">ניתוח וסטטיסטיקות</h3>
+          <h3 className="card-title">דוחות ותובנות</h3>
           <p className="card-text">
-            קבל תובנות על האירוע שלך. עקוב אחר השתתפות, 
-            תגובות ומשוב מהאורחים בזמן אמת.
+            ניתוחים מתקדמים וסטטיסטיקות בזמן אמת לאירוע מושלם.
           </p>
         </div>
 
@@ -61,10 +57,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-mobile-screen"></i>
           </div>
-          <h3 className="card-title">גישה מכל מקום</h3>
+          <h3 className="card-title">נגישות מלאה</h3>
           <p className="card-text">
-            נהל את האירוע מכל מכשיר. אפליקציה מותאמת לנייד 
-            עם ממשק פשוט ואינטואיטיבי.
+            פלטפורמה רספונסיבית הפועלת מושלם על כל המכשירים.
           </p>
         </div>
 
@@ -72,10 +67,9 @@ const FeaturesSection = () => {
           <div className="feature-icon">
             <i className="fa-solid fa-shield-halved"></i>
           </div>
-          <h3 className="card-title">אבטחה מתקדמת</h3>
+          <h3 className="card-title">אבטחה ופרטיות</h3>
           <p className="card-text">
-            הנתונים שלך מוגנים. אבטחה מתקדמת עם הצפנה 
-            מלאה ושמירה על פרטיות האורחים.
+            הגנה מלאה על הנתונים עם הצפנה מתקדמת ופרטיות מובטחת.
           </p>
         </div>
       </div>
