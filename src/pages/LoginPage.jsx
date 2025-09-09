@@ -1,113 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { auth } from '../../firebase-config';
-import { 
-    signInWithEmailAndPassword, 
-    sendSignInLinkToEmail, 
-    isSignInWithEmailLink, 
-    signInWithEmailLink, 
-    GoogleAuthProvider, 
-    FacebookAuthProvider, // הוספתי את פייסבוק
-    signInWithPopup 
-} from 'firebase/auth';
-import './LoginPage.css'; // נוודא שה-CSS מיובא
+import React, { useState } from "react";
+import { useAuth } from '../hooks/useAuth';
+import { useEventCheck } from '../hooks/useEventCheck';
 import { useNavigate } from "react-router-dom";
-
-// TODO: Choose new Typography, Check input color, check login button hover, implement google + facebook login
+import './LoginPage.css';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    
+    const { loginWithEmail, loginWithGoogle, loginWithFacebook, loading, isAuthenticated } = useAuth();
+    const { hasEvent, loading: eventLoading } = useEventCheck();
 
-    // לוגיקה קיימת נשארת ללא שינוי...
-    useEffect(() => {
-        if (isSignInWithEmailLink(auth, window.location.href)) {
-            let savedEmail = window.localStorage.getItem('emailForSignIn');
-            if (!savedEmail) {
-                savedEmail = window.prompt('Please provide your email for confirmation');
-            }
-            if (savedEmail) {
-                signInWithEmailLink(auth, savedEmail, window.location.href)
-                    .then((result) => {
-                        window.localStorage.removeItem('emailForSignIn');
-                        localStorage.setItem("userId", result.user.uid);
-                        navigate("/");
-                    })
-                    .catch((err) => setError('שגיאה בהתחברות עם קישור האימייל.'));
+    // Redirect if already authenticated
+    React.useEffect(() => {
+        if (isAuthenticated && !loading && !eventLoading) {
+            // Check if user has an event
+            if (hasEvent) {
+                navigate('/dashboard');
+            } else {
+                navigate('/create-event');
             }
         }
-    }, [navigate]);
-    
+    }, [isAuthenticated, loading, eventLoading, hasEvent, navigate]);
+
     // התחברות עם אימייל וסיסמה
     const handleLogin = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
         setError(null);
+        
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            localStorage.setItem("userId", userCredential.user.uid);
-            navigate("/");
-        } catch (error) {
-            handleAuthError(error);
-        } finally {
-            setIsLoading(false);
+            await loginWithEmail(email, password);
+            // Navigation will happen automatically via useEffect
+        } catch (err) {
+            setError(err.message);
         }
     };
 
     // התחברות עם גוגל
     const handleGoogleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
-        handlePopupSignIn(provider);
-    };
-
-    // התחברות עם פייסבוק (הלוגיקה זהה לגוגל)
-    const handleFacebookSignIn = async () => {
-        const provider = new FacebookAuthProvider();
-        handlePopupSignIn(provider);
-    };
-
-    // פונקציית עזר להתחברות עם Popup
-    const handlePopupSignIn = async (provider) => {
-        setIsLoading(true);
         setError(null);
+        
         try {
-            const result = await signInWithPopup(auth, provider);
-            localStorage.setItem("userId", result.user.uid);
-            localStorage.setItem("fullName", result.user.displayName || '');
-            navigate("/");
-        } catch (error) {
-            handleAuthError(error);
-        } finally {
-            setIsLoading(false);
+            await loginWithGoogle();
+            // Navigation will happen automatically via useEffect
+        } catch (err) {
+            setError(err.message);
         }
     };
 
-    // פונקציית עזר לטיפול בשגיאות
-    const handleAuthError = (error) => {
-        let errorMessage = "אירעה שגיאה. נסה שוב.";
-        switch (error.code) {
-            case 'auth/invalid-credential':
-            case 'auth/user-not-found':
-            case 'auth/wrong-password':
-                errorMessage = "אימייל או סיסמה שגויים";
-                break;
-            case 'auth/invalid-email':
-                errorMessage = "כתובת אימייל לא תקינה";
-                break;
-            case 'auth/too-many-requests':
-                errorMessage = "יותר מדי ניסיונות. נסה שוב מאוחר יותר.";
-                break;
-            case 'auth/account-exists-with-different-credential':
-                 errorMessage = "חשבון כבר קיים עם אמצעי זיהוי אחר.";
-                 break;
-            default:
-                console.error("Firebase Auth Error:", error);
+    // התחברות עם פייסבוק
+    const handleFacebookSignIn = async () => {
+        setError(null);
+        
+        try {
+            await loginWithFacebook();
+            // Navigation will happen automatically via useEffect
+        } catch (err) {
+            setError(err.message);
         }
-        setError(errorMessage);
     };
-
 
     return (
         <div className="login-container">
@@ -147,8 +100,8 @@ const LoginPage = () => {
                     {/* שינוי 3: הוספת קישור "שכחתי סיסמה" */}
                     <a href="/forgot-password" className="forgot-password">שכחתי סיסמה?</a>
 
-                    <button type="submit" className="login-btn" disabled={isLoading}>
-                        {isLoading ? 'מתחבר...' : 'התחברות'}
+                    <button type="submit" className="login-btn" disabled={loading || eventLoading}>
+                        {loading || eventLoading ? 'מתחבר...' : 'התחברות'}
                     </button>
                     
                     {error && <p className="error-message">{error}</p>}
@@ -158,10 +111,10 @@ const LoginPage = () => {
 
                     {/* שינוי 4: כפתורי התחברות חברתיים */}
                     <div className="social-login">
-                        <button type="button" onClick={handleFacebookSignIn} className="social-icon facebook" aria-label="התחבר עם פייסבוק" disabled={isLoading}>
+                        <button type="button" onClick={handleFacebookSignIn} className="social-icon facebook" aria-label="התחבר עם פייסבוק" disabled={loading || eventLoading}>
                             <i className="fa-brands fa-facebook-f"></i>
                         </button>
-                        <button type="button" onClick={handleGoogleSignIn} className="social-icon google" aria-label="התחבר עם גוגל" disabled={isLoading}>
+                        <button type="button" onClick={handleGoogleSignIn} className="social-icon google" aria-label="התחבר עם גוגל" disabled={loading || eventLoading}>
                             <i className="fa-brands fa-google"></i>
                         </button>
                     </div>

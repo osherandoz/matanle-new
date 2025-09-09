@@ -3,6 +3,10 @@ import { Routes, Route } from "react-router-dom";
 import "./theme/globals.css";
 import "./components/Layout/Layout.css";
 import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import CreateEventPage from "./pages/CreateEventPage";
+import ThankYouPage from "./pages/ThankYouPage";
 import Dashboard from "./components/Dashboard/Dashboard";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import ExpenseTrackingPage from "./pages/ExpenseTrackingPage";
@@ -12,6 +16,7 @@ import GiftsPage from "./pages/GiftsPage";
 import TopNavigation from "./components/Layout/TopNavigation";
 import Topbar from "./components/Layout/Topbar";
 import { ToastProvider } from "./components/Toast/Toast";
+import { FirebaseProvider } from "../FirebaseContext.jsx";
 import Breadcrumb from "./components/Breadcrumb/Breadcrumb";
 
 // Dashboard Layout Component
@@ -35,10 +40,18 @@ const DashboardLayout = ({ children, title, subtitle }) => {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <Routes>
+    <FirebaseProvider>
+      <ToastProvider>
+        <Routes>
         {/* Landing Page Route - No Dashboard Layout */}
         <Route path="/" element={<LandingPage />} />
+        
+        {/* Authentication Routes - No Dashboard Layout */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/signup" element={<RegisterPage />} />
+        <Route path="/create-event" element={<CreateEventPage />} />
+        <Route path="/thank-you" element={<ThankYouPage />} />
         
         {/* Dashboard and App Routes - With Dashboard Layout */}
         <Route path="/dashboard" element={
@@ -76,7 +89,8 @@ export default function App() {
             <div>הגדרות - בפיתוח</div>
           </DashboardLayout>
         } />
-      </Routes>
-    </ToastProvider>
+        </Routes>
+      </ToastProvider>
+    </FirebaseProvider>
   );
 }

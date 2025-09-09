@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { auth, db } from '../../firebase-config';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import './RegisterPage.css';
+import { useAuth } from '../hooks/useAuth';
+import { useEventCheck } from '../hooks/useEventCheck';
 import { useNavigate } from "react-router-dom";
+import './RegisterPage.css';
 
 const RegisterPage = () => {
     const [firstName, setFirstName] = useState('');
@@ -20,8 +19,22 @@ const RegisterPage = () => {
         lowercase: false,
         special: false
     });
-    const [isLoading, setIsLoading] = useState(false);
+    
     const navigate = useNavigate();
+    const { registerWithEmail, loginWithGoogle, loading, isAuthenticated } = useAuth();
+    const { hasEvent, loading: eventLoading } = useEventCheck();
+
+    // Redirect if already authenticated
+    React.useEffect(() => {
+        if (isAuthenticated && !loading && !eventLoading) {
+            // Check if user has an event
+            if (hasEvent) {
+                navigate('/dashboard');
+            } else {
+                navigate('/create-event');
+            }
+        }
+    }, [isAuthenticated, loading, eventLoading, hasEvent, navigate]);
 
     // Check password requirements
     const checkPasswordRequirements = (password) => {
@@ -44,33 +57,13 @@ const RegisterPage = () => {
     };
 
     const handleGoogleSignIn = async () => {
-        setIsLoading(true);
         setError('');
         
         try {
-            const provider = new GoogleAuthProvider();
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            
-            // Save user data to Firestore
-            await setDoc(doc(db, "users", user.uid), {
-                firstName: user.displayName?.split(' ')[0] || '',
-                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-                email: user.email,
-                phone: user.phoneNumber || '',
-                createdAt: new Date(),
-                signInMethod: 'google'
-            });
-
-            localStorage.setItem("userId", user.uid);
-            localStorage.setItem("fullName", user.displayName || '');
-            console.log("Google sign in successful:", user.uid);
-            navigate("/thank-you");
+            await loginWithGoogle();
+            // Navigation will happen automatically via useEffect
         } catch (err) {
-            console.log("Google Sign In Error:", err.message);
             setError(err.message);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -82,33 +75,23 @@ const RegisterPage = () => {
             return;
         }
         
-        setIsLoading(true);
         setError('');
         
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            await setDoc(doc(db, "users", user.uid), {
+            const userData = {
                 firstName,
                 lastName,
                 relate,
                 email,
                 phone,
                 gender,
-                createdAt: new Date(),
-                signInMethod: 'email'
-            });
-
-            localStorage.setItem("userId", user.uid);
-            localStorage.setItem("fullName", `${firstName} ${lastName}`);
-            console.log("Registration successful:", user.uid);
-            navigate("/thank-you");
+                password
+            };
+            
+            await registerWithEmail(userData);
+            // Navigation will happen automatically via useEffect
         } catch (err) {
-            console.log("Registration Error:", err.message);
-            setError(err.message);      
-        } finally {
-            setIsLoading(false);
+            setError(err.message);
         }
     };
 
@@ -241,8 +224,8 @@ return (
                     </div>
                 </div>
                 
-                <button type="submit" className="submit-btn" disabled={isLoading || !isPasswordValid()}>
-                    {isLoading ? 'מעבד...' : 'השלם הרשמה'}
+                <button type="submit" className="submit-btn" disabled={loading || eventLoading || !isPasswordValid()}>
+                    {loading || eventLoading ? 'מעבד...' : 'השלם הרשמה'}
                 </button>
 
                 <div className="divider">
@@ -252,10 +235,10 @@ return (
                 <button 
                     type="button" 
                     onClick={handleGoogleSignIn}
-                    disabled={isLoading}
+                    disabled={loading || eventLoading}
                     className="google-btn"
                 >
-                    {isLoading ? 'מעבד...' : 'הירשם עם Google'}
+                    {loading || eventLoading ? 'מעבד...' : 'הירשם עם Google'}
                 </button>
 
                 <div className="form-footer">
