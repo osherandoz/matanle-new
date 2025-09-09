@@ -1,25 +1,29 @@
+/* Import centralized color system from login/register pages */
+@import './colors.css';
+
 :root {
-  --bg: #0f1115;
-  --panel: rgba(255,255,255,0.06);
-  --panel-border: rgba(255,255,255,0.12);
-  --text: #e8eaf1;
-  --text-dim: #aab2c0;
+  /* Legacy variables for compatibility - will be replaced with new color system */
+  --bg: var(--bg-gradient-main);
+  --panel: var(--bg-card);
+  --panel-border: var(--dun);
+  --text: var(--text-dark);
+  --text-dim: var(--text-muted);
 
-  --brand: #7c5cff;
-  --brand-hover: #6a4df0;
-  --accent: #00d4ff;
+  --brand: var(--coffee);
+  --brand-hover: var(--raw-umber);
+  --accent: var(--chamoisee);
 
-  --success: #1ebe7e;
+  --success: var(--text-success);
   --warning: #f1b44c;
   --danger: #ff6b6b;
 
-  --radius-xl: 20px;
-  --radius-lg: 14px;
-  --radius-md: 10px;
+  --radius-xl: var(--radius-card);
+  --radius-lg: var(--radius-small);
+  --radius-md: var(--radius-input);
 
   --blur: 12px;
-  --shadow: 0 10px 30px rgba(0,0,0,0.35);
-  --transition: 180ms ease;
+  --shadow: var(--shadow-card);
+  --transition: var(--transition-normal);
 }
 
 * { box-sizing: border-box; }
@@ -27,9 +31,9 @@ html, body, #root { height: 100%; margin: 0; padding: 0; }
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Heebo", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg-gradient-main);
+  color: var(--text-dark);
+  font-family: var(--font-family);
   direction: rtl;
 }
 

@@ -1,3 +1,6 @@
+/* Import centralized color system from login/register pages */
+@import '../theme/colors.css';
+
 /* Dark Theme Footer */
 .dark-theme .footer {
   background: rgba(15, 15, 15, 0.95) !important;
@@ -68,11 +71,11 @@
 .footer {
   width: 100%;
   padding: var(--space-md) 5% var(--space-sm) 5% !important;
-  background: var(--gradient-background);
+  background: var(--bg-gradient-reverse);
   font-family: 'Assistant', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(163, 135, 114, 0.1);
+  border-top: 1px solid var(--dun);
 }
 
 .footer::before {
@@ -82,7 +85,7 @@
   left: 0;
   right: 0;
   height: 40px !important;
-  background: linear-gradient(to bottom, var(--background-light), transparent);
+  background: linear-gradient(to bottom, var(--almond), transparent);
   z-index: 1;
 }
 
@@ -132,12 +135,12 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--gradient-primary);
-  color: var(--text-white);
+  background: var(--coffee);
+  color: var(--text-light);
   text-decoration: none;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-md);
-  border: 2px solid rgba(163, 135, 114, 0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(127, 85, 57, 0.3);
+  border: 2px solid var(--dun);
   position: relative;
   overflow: hidden;
   opacity: 0;
@@ -170,8 +173,9 @@
 
 .social-link:hover {
   transform: translateY(-8px) scale(1.1);
-  box-shadow: var(--shadow-xl);
-  border-color: rgba(163, 135, 114, 0.4);
+  box-shadow: 0 8px 20px rgba(127, 85, 57, 0.4);
+  border-color: var(--coffee);
+  background: var(--raw-umber);
 }
 
 .social-link:hover::before {
@@ -203,22 +207,24 @@
 
 .copyright p {
   font-size: 1rem;
-  color: var(--text-primary);
+  color: var(--text-dark);
+  opacity: 0.8;
   margin: 0;
   font-weight: 500;
-  transition: all var(--transition-normal);
+  transition: all 0.3s ease;
 }
 
 .copyright:hover p {
-  color: var(--primary-warm);
+  color: var(--coffee);
+  opacity: 1;
   transform: scale(1.02);
 }
 
 .contact-info {
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-dark);
+  opacity: 0.8;
   font-size: 1rem;
-  opacity: 0;
   animation: footerFadeIn 1s ease-out 1s forwards;
 }
 
@@ -227,13 +233,13 @@
 }
 
 .contact-info a {
-  color: var(--primary-warm);
+  color: var(--coffee);
   text-decoration: none;
-  transition: color var(--transition-normal);
+  transition: color 0.3s ease;
 }
 
 .contact-info a:hover {
-  color: var(--hover-primary);
+  color: var(--raw-umber);
 }
 
 .footer-links {
@@ -245,17 +251,19 @@
 }
 
 .footer-links a {
-  color: var(--text-secondary);
+  color: var(--text-dark);
+  opacity: 0.8;
   text-decoration: none;
   font-size: 0.95rem;
-  transition: color var(--transition-normal);
+  transition: all 0.3s ease;
   padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
 }
 
 .footer-links a:hover {
-  color: var(--primary-warm);
-  background: rgba(163, 135, 114, 0.05);
+  color: var(--coffee);
+  opacity: 1;
+  background: var(--almond);
 }
 
 

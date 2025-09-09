@@ -1,6 +1,9 @@
 /* ===================================== */
-/* Team Section Styles           */
+/* Team Section Styles - Consistent with Login/Register Forms */
 /* ===================================== */
+
+/* Import centralized color system from login/register pages */
+@import '../theme/colors.css';
 
 /* Dark Theme Team Section */
 .dark-theme .team-section {
@@ -38,7 +41,7 @@
 .team-section {
   width: 100%;
   padding: 1.5rem 5% !important;
-  background-color: var(--almond);
+  background: var(--bg-gradient-main);
   box-sizing: border-box;
 }
 
@@ -77,17 +80,20 @@
 
 .team-card {
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   width: 200px !important;
   height: 200px !important;
   flex-shrink: 0;
+  border: 1px solid var(--dun);
 }
 
 .team-card:hover {
   transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(127, 85, 57, 0.2);
+  border-color: var(--coffee);
 }
 
 .team-member-img {
@@ -159,7 +165,7 @@
 }
 
 .team-card .social-links a:hover {
-  color: var(--primary-warm);
+  color: var(--coffee);
   background-color: #ffffff;
   transform: scale(1.1);
   border-color: rgba(255, 255, 255, 0.8);
@@ -179,6 +185,7 @@
   font-weight: var(--font-medium);
   line-height: var(--leading-relaxed);
   color: var(--text-dark);
+  opacity: 0.8;
 }
 
 /* ===================================== */

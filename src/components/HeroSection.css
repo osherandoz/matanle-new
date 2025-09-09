@@ -1,5 +1,8 @@
 /* ===================================== */
-/* Modern Hero Section Design - 40% Height Reduction v3.0 */
+/* Modern Hero Section Design - Consistent with Login/Register Forms */
+
+/* Import centralized color system from login/register pages */
+@import '../theme/colors.css';
 
 /* Dark Theme Hero Section */
 .dark-theme .hero-section {
@@ -83,7 +86,7 @@
   padding: var(--space-xl) 5% !important;
   box-sizing: border-box;
   
-  background: var(--gradient-hero);
+  background: var(--bg-gradient-main);
   position: relative;
   overflow: hidden;
 }
@@ -137,13 +140,9 @@
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 700;
   line-height: 1.1;
-  color: var(--text-primary);
+  color: var(--coffee);
   margin-bottom: var(--space-lg);
   letter-spacing: -0.02em;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .hero-subtitle {
@@ -195,27 +194,35 @@
 }
 
 .hero-actions .btn-primary {
-  background: var(--gradient-primary);
-  color: var(--text-white);
-  box-shadow: var(--shadow-md);
+  background: var(--coffee);
+  color: var(--text-light);
+  box-shadow: 0 4px 15px rgba(127, 85, 57, 0.3);
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all 0.2s ease;
 }
 
 .hero-actions .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 20px rgba(127, 85, 57, 0.4);
+  background: var(--raw-umber);
 }
 
 .hero-actions .btn-secondary {
   background: transparent;
-  color: var(--primary-warm);
-  border: 2px solid var(--primary-warm);
+  color: var(--coffee);
+  border: 2px solid var(--coffee);
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .hero-actions .btn-secondary:hover {
-  background: var(--primary-warm);
-  color: var(--text-white);
+  background: var(--coffee);
+  color: var(--text-light);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 15px rgba(127, 85, 57, 0.3);
 }
 
 /* ===================================== */
@@ -225,9 +232,10 @@
 .hero-features {
   margin-top: var(--space-2xl);
   padding: var(--space-lg);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-xl);
-  border: 1px solid rgba(163, 135, 114, 0.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--dun);
+  box-shadow: var(--shadow-card);
   display: flex;
   gap: var(--space-lg);
   align-items: center;
@@ -240,24 +248,25 @@
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(163, 135, 114, 0.08);
-  transition: all var(--transition-normal);
+  border-radius: 12px;
+  background: var(--bg-hover);
+  border: 1px solid var(--dun);
+  transition: var(--transition-normal);
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-dark);
 }
 
 .feature-highlight:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(163, 135, 114, 0.15);
-  border-color: rgba(163, 135, 114, 0.2);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--coffee);
+  background: var(--bg-secondary);
 }
 
 .feature-highlight i {
   font-size: 1.2rem;
-  color: var(--primary-warm);
+  color: var(--coffee);
   width: 20px;
   text-align: center;
 }

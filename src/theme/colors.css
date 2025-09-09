@@ -1,0 +1,102 @@
+/* ===================================== */
+/* Centralized Color System - Matching Login/Register Pages */
+/* ===================================== */
+
+:root {
+  /* Primary Color Palette - Exact match from LoginPage.css and RegisterPage.css */
+  --almond: #ede0d4;
+  --dun: #e6ccb2;
+  --tan: #ddb892;
+  --chamoisee: #b08968;
+  --raw-umber: #9c6644;
+  --coffee: #7f5539;
+
+  /* Text Colors */
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --text-success: #28a745;
+  --text-muted: #6c757d;
+
+  /* Background Gradients - Exact match from login/register pages */
+  --bg-gradient-main: linear-gradient(160deg, var(--almond), var(--dun));
+  --bg-gradient-reverse: linear-gradient(160deg, var(--dun), var(--almond));
+
+  /* Component Backgrounds */
+  --bg-card: var(--text-light);
+  --bg-hover: var(--almond);
+  --bg-secondary: var(--dun);
+
+  /* Shadows - Matching login/register forms */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 20px 40px rgba(127, 85, 57, 0.2);
+  --shadow-button: 0 4px 15px rgba(127, 85, 57, 0.3);
+  --shadow-button-hover: 0 8px 20px rgba(127, 85, 57, 0.4);
+
+  /* Border Radius - Matching login/register forms */
+  --radius-card: 20px;
+  --radius-button: 50px;
+  --radius-small: 12px;
+  --radius-input: 8px;
+
+  /* Transitions */
+  --transition-normal: all 0.3s ease;
+  --transition-fast: all 0.2s ease;
+
+  /* Font Family - Matching login/register pages */
+  --font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Typography Consistency */
+body, html {
+  font-family: var(--font-family);
+  direction: rtl;
+  color: var(--text-dark);
+}
+
+/* Button Styles - Exact match from login/register forms */
+.btn-primary {
+  background: var(--coffee);
+  color: var(--text-light);
+  border: none;
+  border-radius: var(--radius-button);
+  font-weight: 700;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-button);
+}
+
+.btn-primary:hover {
+  background: var(--raw-umber);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-button-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--coffee);
+  border: 2px solid var(--coffee);
+  border-radius: var(--radius-button);
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--coffee);
+  color: var(--text-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-button);
+}
+
+/* Card Styles - Exact match from login/register forms */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--dun);
+  transition: var(--transition-normal);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--coffee);
+}
