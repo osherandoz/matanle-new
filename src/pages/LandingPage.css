@@ -1,42 +1,37 @@
+/* Import centralized color system matching login/register pages */
+@import '../theme/colors.css';
+
 .landing-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-gradient-main);
+  color: var(--text-dark);
+  font-family: var(--font-family);
+  direction: rtl;
 }
 
 .landing-content {
   flex: 1;
 }
 
-/* הוסר padding-top שנועד לניו-בר מוצמד */
-
-/* Professional Dark Theme for Landing Page */
-.landing-page.dark-theme {
-  background: #0f0f0f;
-  color: #ffffff;
-  position: relative;
-}
-
-.landing-page.dark-theme::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 40% 60%, rgba(120, 200, 255, 0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.landing-page.dark-theme .landing-content {
-  position: relative;
-  z-index: 1;
-}
-
-.landing-page.dark-theme * {
+/* Ensure all text uses our color system */
+.landing-page * {
   color: inherit;
+}
+
+/* Override any conflicting styles */
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4,
+.landing-page h5,
+.landing-page h6 {
+  color: var(--coffee);
+}
+
+.landing-page p,
+.landing-page span,
+.landing-page div {
+  color: var(--text-dark);
 }

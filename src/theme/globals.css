@@ -1,26 +1,62 @@
-/* Import centralized color system from login/register pages */
-@import './colors.css';
-
+/* Centralized Color System - Exact match from LoginPage.css and RegisterPage.css */
 :root {
-  /* Legacy variables for compatibility - will be replaced with new color system */
+  /* Primary Color Palette - EXACT colors from login/register pages */
+  --almond: #ede0d4;
+  --dun: #e6ccb2;
+  --tan: #ddb892;
+  --chamoisee: #b08968;
+  --raw-umber: #9c6644;
+  --coffee: #7f5539;
+
+  /* Text Colors */
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --text-success: #28a745;
+  --text-muted: #6c757d;
+
+  /* Background Gradients - EXACT from login/register pages */
+  --bg-gradient-main: linear-gradient(160deg, var(--almond), var(--dun));
+  --bg-gradient-reverse: linear-gradient(160deg, var(--dun), var(--almond));
+
+  /* Component Backgrounds */
+  --bg-card: var(--text-light);
+  --bg-hover: var(--almond);
+  --bg-secondary: var(--dun);
+
+  /* Shadows - EXACT from login/register forms */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 20px 40px rgba(127, 85, 57, 0.2);
+  --shadow-button: 0 4px 15px rgba(127, 85, 57, 0.3);
+  --shadow-button-hover: 0 8px 20px rgba(127, 85, 57, 0.4);
+
+  /* Border Radius - EXACT from login/register forms */
+  --radius-card: 20px;
+  --radius-button: 50px;
+  --radius-small: 12px;
+  --radius-input: 8px;
+
+  /* Transitions */
+  --transition-normal: all 0.3s ease;
+  --transition-fast: all 0.2s ease;
+
+  /* Font Family - EXACT from login/register pages */
+  --font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Legacy variables for compatibility */
   --bg: var(--bg-gradient-main);
   --panel: var(--bg-card);
   --panel-border: var(--dun);
   --text: var(--text-dark);
   --text-dim: var(--text-muted);
-
   --brand: var(--coffee);
   --brand-hover: var(--raw-umber);
   --accent: var(--chamoisee);
-
   --success: var(--text-success);
   --warning: #f1b44c;
   --danger: #ff6b6b;
-
   --radius-xl: var(--radius-card);
   --radius-lg: var(--radius-small);
   --radius-md: var(--radius-input);
-
   --blur: 12px;
   --shadow: var(--shadow-card);
   --transition: var(--transition-normal);

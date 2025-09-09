@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 
 const LandingPage = () => {
   return (
-    <div className="landing-page dark-theme">
+    <div className="landing-page">
       <Navbar />
       <main className="landing-content">
         <HeroSection />
