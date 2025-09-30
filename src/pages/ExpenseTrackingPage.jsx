@@ -1,74 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useEventCheck } from "../hooks/useEventCheck";
+import { useEventSubcollections } from "../hooks/useEventSubcollections";
+import { useToast } from "../components/Toast/Toast";
 
-// Mock expense data
-const mockExpenses = [
-  {
-    id: 1,
-    category: "מקום",
-    description: "אולם אגדות - מקדמה",
-    amount: 15000,
-    date: "2024-01-15",
-    status: "שולם",
-    vendor: "אולם אגדות",
-    paymentMethod: "העברה בנקאית"
-  },
-  {
-    id: 2,
-    category: "צילום",
-    description: "צלם לחתונה",
-    amount: 8500,
-    date: "2024-01-20",
-    status: "בהמתנה",
-    vendor: "סטודיו אור",
-    paymentMethod: "צ'ק"
-  },
-  {
-    id: 3,
-    category: "קייטרינג",
-    description: "ארוחת ערב - מקדמה",
-    amount: 12000,
-    date: "2024-02-01",
-    status: "שולם",
-    vendor: "שף דני",
-    paymentMethod: "מזומן"
-  },
-  {
-    id: 4,
-    category: "פרחים",
-    description: "זרי פרחים ועיטורים",
-    amount: 3500,
-    date: "2024-02-10",
-    status: "בהמתנה",
-    vendor: "פרחי שרון",
-    paymentMethod: "אשראי"
-  },
-  {
-    id: 5,
-    category: "בידור",
-    description: "DJ ומערכת קול",
-    amount: 4500,
-    date: "2024-02-15",
-    status: "שולם",
-    vendor: "מוזיקה בראש",
-    paymentMethod: "העברה בנקאית"
-  },
-  {
-    id: 6,
-    category: "שמלה",
-    description: "שמלת כלה",
-    amount: 6000,
-    date: "2024-01-30",
-    status: "שולם",
-    vendor: "בוטיק הכלה",
-    paymentMethod: "אשראי"
-  }
-];
+// No mock data - expenses will start empty
 
 const categories = ["הכל", "מקום", "צילום", "קייטרינג", "פרחים", "בידור", "שמלה", "אחר"];
 const statuses = ["הכל", "שולם", "בהמתנה", "בוטל"];
 
 export default function ExpenseTrackingPage() {
-  const [expenses, setExpenses] = useState(mockExpenses);
+  const { currentEvent } = useEventCheck();
+  const { getExpenses, addExpense, updateExpense, deleteExpense } = useEventSubcollections(currentEvent?.id);
+  const { showError, showSuccess } = useToast();
+
+  const [expenses, setExpenses] = useState([]);
   const [viewMode, setViewMode] = useState("table"); // "table" or "grid"
   const [filterCategory, setFilterCategory] = useState("הכל");
   const [filterStatus, setFilterStatus] = useState("הכל");
@@ -76,6 +21,8 @@ export default function ExpenseTrackingPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [editingExpense, setEditingExpense] = useState(null);
   const [newExpense, setNewExpense] = useState({
     category: "מקום",
     description: "",
@@ -84,6 +31,26 @@ export default function ExpenseTrackingPage() {
     date: new Date().toISOString().split('T')[0],
     paymentMethod: "אשראי"
   });
+
+  // Load expenses when component mounts or currentEvent changes
+  useEffect(() => {
+    const loadExpenses = async () => {
+      if (!currentEvent?.id) {
+        setExpenses([]);
+        return;
+      }
+
+      try {
+        const expensesData = await getExpenses();
+        setExpenses(expensesData);
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        // Silent error - don't show to user, just keep empty state
+      }
+    };
+
+    loadExpenses();
+  }, [currentEvent?.id, getExpenses]);
 
   // Filter and sort expenses
   const filteredExpenses = expenses
@@ -147,47 +114,175 @@ export default function ExpenseTrackingPage() {
     }
   };
 
-  const handleAddExpense = (e) => {
+  const handleAddExpense = async (e) => {
     e.preventDefault();
+    
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
     
     // Basic validation
     if (!newExpense.description.trim() || !newExpense.vendor.trim() || !newExpense.amount || !newExpense.date) {
-      alert("אנא מלא את כל השדות הנדרשים");
+      showError("אנא מלא את כל השדות הנדרשים");
       return;
     }
 
     // Amount validation
     const amount = parseFloat(newExpense.amount);
     if (amount <= 0) {
-      alert("אנא הכנס סכום תקין");
+      showError("אנא הכנס סכום תקין");
       return;
     }
 
-    // Create new expense object
-    const expense = {
-      id: Math.max(...expenses.map(e => e.id)) + 1,
-      category: newExpense.category,
-      description: newExpense.description.trim(),
-      vendor: newExpense.vendor.trim(),
-      amount: amount,
-      date: newExpense.date,
-      status: "בהמתנה",
-      paymentMethod: newExpense.paymentMethod
-    };
+    try {
+      // Create expense data for database
+      const expenseData = {
+        category: newExpense.category,
+        description: newExpense.description.trim(),
+        vendor: newExpense.vendor.trim(),
+        amount: amount,
+        date: newExpense.date,
+        status: "בהמתנה",
+        paymentMethod: newExpense.paymentMethod
+      };
 
-    // Add to expenses list
-    setExpenses(prevExpenses => [...prevExpenses, expense]);
-    
-    // Reset form and close modal
+      // Add to database
+      const newExpenseDoc = await addExpense(expenseData);
+      
+      // Update local state
+      setExpenses(prevExpenses => [...prevExpenses, newExpenseDoc]);
+      
+      // Show success message
+      setSuccessMessage('ההוצאה נוספה בהצלחה!');
+      
+      // Reset form and close modal after a short delay
+      setTimeout(() => {
+        setNewExpense({
+          category: "מקום",
+          description: "",
+          vendor: "",
+          amount: "",
+          date: new Date().toISOString().split('T')[0],
+          paymentMethod: "אשראי"
+        });
+        setSuccessMessage("");
+        setShowAddForm(false);
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      showError('שגיאה בהוספת ההוצאה');
+    }
+  };
+
+  const handleEditExpense = (expense) => {
+    setEditingExpense(expense);
     setNewExpense({
-      category: "מקום",
-      description: "",
-      vendor: "",
-      amount: "",
-      date: new Date().toISOString().split('T')[0],
-      paymentMethod: "אשראי"
+      category: expense.category,
+      description: expense.description,
+      vendor: expense.vendor,
+      amount: expense.amount.toString(),
+      date: expense.date,
+      status: expense.status,
+      paymentMethod: expense.paymentMethod
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
+  };
+
+  const handleUpdateExpense = async (e) => {
+    e.preventDefault();
+    
+    if (!currentEvent?.id || !editingExpense) {
+      showError('שגיאה בעדכון ההוצאה');
+      return;
+    }
+    
+    // Basic validation
+    if (!newExpense.description.trim() || !newExpense.vendor.trim() || !newExpense.amount || !newExpense.date) {
+      showError("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    const amount = parseFloat(newExpense.amount);
+    if (amount <= 0) {
+      showError("אנא הכנס סכום תקין");
+      return;
+    }
+
+    try {
+      // Create updated expense data
+      const updatedData = {
+        category: newExpense.category,
+        description: newExpense.description.trim(),
+        vendor: newExpense.vendor.trim(),
+        amount: amount,
+        date: newExpense.date,
+        status: newExpense.status,
+        paymentMethod: newExpense.paymentMethod
+      };
+
+      // Update in database
+      const updatedExpense = await updateExpense(editingExpense.id, updatedData);
+      
+      // Update local state
+      setExpenses(prevExpenses => 
+        prevExpenses.map(expense => 
+          expense.id === editingExpense.id ? updatedExpense : expense
+        )
+      );
+      
+      // Show success message
+      setSuccessMessage('ההוצאה עודכנה בהצלחה!');
+      
+      // Reset form and close modal after a short delay
+      setTimeout(() => {
+        setNewExpense({
+          category: "מקום",
+          description: "",
+          vendor: "",
+          amount: "",
+          date: new Date().toISOString().split('T')[0],
+          paymentMethod: "אשראי"
+        });
+        setEditingExpense(null);
+        setSuccessMessage("");
+        setShowAddForm(false);
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      showError('שגיאה בעדכון ההוצאה');
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId) => {
+    if (!currentEvent?.id) {
+      showError('שגיאה במחיקת ההוצאה');
+      return;
+    }
+
+    // Show confirmation dialog
+    if (!window.confirm('האם אתה בטוח שברצונך למחוק את ההוצאה?')) {
+      return;
+    }
+
+    try {
+      // Delete from database
+      await deleteExpense(expenseId);
+      
+      // Update local state
+      setExpenses(prevExpenses => 
+        prevExpenses.filter(expense => expense.id !== expenseId)
+      );
+      
+      // Show success message
+      showSuccess('ההוצאה נמחקה בהצלחה');
+      
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      showError('שגיאה במחיקת ההוצאה');
+    }
   };
 
   const handleCancelAdd = () => {
@@ -199,6 +294,8 @@ export default function ExpenseTrackingPage() {
       date: new Date().toISOString().split('T')[0],
       paymentMethod: "אשראי"
     });
+    setEditingExpense(null);
+    setSuccessMessage("");
     setShowAddForm(false);
   };
 
@@ -317,7 +414,22 @@ export default function ExpenseTrackingPage() {
 
       {/* Content */}
       <div className="content-section">
-        {viewMode === "table" ? (
+        {expenses.length === 0 ? (
+          <div className="empty-state glass">
+            <div className="empty-icon">
+              <i className="fa-solid fa-receipt"></i>
+            </div>
+            <h3>אין הוצאות עדיין</h3>
+            <p>הוסף הוצאה ראשונה כדי להתחיל לעקוב אחר התקציב שלך</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowAddForm(true)}
+            >
+              <i className="fa-solid fa-plus"></i>
+              הוסף הוצאה ראשונה
+            </button>
+          </div>
+        ) : viewMode === "table" ? (
           <div className="table-view glass">
             <div className="table-container">
               <table className="expenses-table">
@@ -377,16 +489,22 @@ export default function ExpenseTrackingPage() {
                         </span>
                       </td>
                       <td>{expense.paymentMethod}</td>
-                      <td>
-                        <div className="actions">
-                          <button className="action-btn edit">
-                            <i className="fa-solid fa-edit"></i>
-                          </button>
-                          <button className="action-btn delete">
-                            <i className="fa-solid fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
+                        <td>
+                          <div className="actions">
+                            <button 
+                              className="action-btn edit"
+                              onClick={() => handleEditExpense(expense)}
+                            >
+                              <i className="fa-solid fa-edit"></i>
+                            </button>
+                            <button 
+                              className="action-btn delete"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                              <i className="fa-solid fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
                     </tr>
                   ))}
                 </tbody>
@@ -425,11 +543,17 @@ export default function ExpenseTrackingPage() {
                   </div>
                 </div>
                 <div className="card-actions">
-                  <button className="action-btn edit">
+                  <button 
+                    className="action-btn edit"
+                    onClick={() => handleEditExpense(expense)}
+                  >
                     <i className="fa-solid fa-edit"></i>
                     עריכה
                   </button>
-                  <button className="action-btn delete">
+                  <button 
+                    className="action-btn delete"
+                    onClick={() => handleDeleteExpense(expense.id)}
+                  >
                     <i className="fa-solid fa-trash"></i>
                     מחיקה
                   </button>
@@ -446,15 +570,21 @@ export default function ExpenseTrackingPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fa-solid fa-plus"></i>
-                הוספת הוצאה חדשה
+                <i className={`fa-solid ${editingExpense ? 'fa-edit' : 'fa-plus'}`}></i>
+                {editingExpense ? 'עריכת הוצאה' : 'הוספת הוצאה חדשה'}
               </h2>
               <button className="modal-close" onClick={handleCancelAdd}>
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
             
-            <form onSubmit={handleAddExpense} className="expense-form">
+             <form onSubmit={editingExpense ? handleUpdateExpense : handleAddExpense} className="expense-form">
+               {successMessage && (
+                 <div className="success-message">
+                   <i className="fa-solid fa-check-circle"></i>
+                   {successMessage}
+                 </div>
+               )}
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="expenseCategory">
@@ -491,6 +621,22 @@ export default function ExpenseTrackingPage() {
                     placeholder="0.00"
                     required
                   />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="expenseStatus">
+                    <i className="fa-solid fa-info-circle"></i>
+                    סטטוס
+                  </label>
+                  <select
+                    id="expenseStatus"
+                    value={newExpense.status || "בהמתנה"}
+                    onChange={(e) => handleInputChange("status", e.target.value)}
+                  >
+                    <option value="בהמתנה">בהמתנה</option>
+                    <option value="שולם">שולם</option>
+                    <option value="בוטל">בוטל</option>
+                  </select>
                 </div>
               </div>
 
@@ -559,8 +705,8 @@ export default function ExpenseTrackingPage() {
 
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  <i className="fa-solid fa-plus"></i>
-                  הוסף הוצאה
+                  <i className={`fa-solid ${editingExpense ? 'fa-save' : 'fa-plus'}`}></i>
+                  {editingExpense ? 'עדכן הוצאה' : 'הוסף הוצאה'}
                 </button>
                 <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
                   <i className="fa-solid fa-times"></i>
@@ -780,9 +926,46 @@ export default function ExpenseTrackingPage() {
           color: white;
         }
 
-        .content-section {
-          flex: 1;
-        }
+         .content-section {
+           flex: 1;
+         }
+
+         .empty-state {
+           padding: var(--space-xl);
+           text-align: center;
+           border-radius: var(--radius-lg);
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: var(--space-lg);
+         }
+
+         .empty-icon {
+           width: 80px;
+           height: 80px;
+           border-radius: 50%;
+           background: rgba(124, 92, 255, 0.2);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           font-size: 2.5rem;
+           color: var(--brand);
+         }
+
+         .empty-state h3 {
+           margin: 0;
+           font-size: 1.5rem;
+           color: var(--text);
+           font-weight: 600;
+         }
+
+         .empty-state p {
+           margin: 0;
+           color: var(--text-secondary);
+           font-size: 1.1rem;
+           max-width: 400px;
+           line-height: 1.6;
+         }
 
         .table-view {
           padding: var(--space-lg);
@@ -1043,12 +1226,24 @@ export default function ExpenseTrackingPage() {
           color: var(--text);
         }
 
-        .expense-form {
-          padding: var(--space-lg);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-lg);
-        }
+         .expense-form {
+           padding: var(--space-lg);
+           display: flex;
+           flex-direction: column;
+           gap: var(--space-lg);
+         }
+
+         .success-message {
+           background: rgba(30, 190, 126, 0.2);
+           border: 1px solid rgba(30, 190, 126, 0.4);
+           color: #1ebe7e;
+           padding: var(--space-md);
+           border-radius: var(--radius-md);
+           display: flex;
+           align-items: center;
+           gap: var(--space-sm);
+           font-weight: 500;
+         }
 
         .form-group {
           display: flex;
