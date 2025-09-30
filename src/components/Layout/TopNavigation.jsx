@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import UserProfile from "./UserProfile";
 import "./TopNavigation.css";
 
 export default function TopNavigation() {
@@ -38,9 +39,9 @@ export default function TopNavigation() {
           ))}
         </div>
 
-        {/* Right side actions (can be expanded later) */}
+        {/* Right side actions */}
         <div className="nav-actions">
-          {/* Placeholder for future actions like user menu, notifications, etc. */}
+          <UserProfile />
         </div>
       </div>
     </nav>

@@ -91,6 +91,7 @@
   min-width: 150px;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
 }
 
 /* Responsive Design */
@@ -156,5 +157,10 @@
   
   .nav-link {
     padding: 6px 8px;
+  }
+  
+  /* Ensure UserProfile is visible on mobile */
+  .nav-actions {
+    min-width: 60px;
   }
 }
