@@ -14,3 +14,6 @@
 #remove all mock data and keep only the css
 
 #start connecting the DB to the pages.
+
+
+#Refactor the landing page:

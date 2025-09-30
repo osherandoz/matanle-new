@@ -203,6 +203,19 @@ body, html {
     cursor: not-allowed;
 }
 
+/* --- Success Message --- */
+.success-message {
+    color: #28a745;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 20px;
+    margin-bottom: 0;
+    text-align: center;
+}
+
 /* --- Error Message --- */
 .error-message {
     color: #d93025;

@@ -8,31 +8,37 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
+    const [loginSuccess, setLoginSuccess] = useState(false);
     const navigate = useNavigate();
     
     const { loginWithEmail, loginWithGoogle, loginWithFacebook, loading, isAuthenticated } = useAuth();
     const { hasEvent, loading: eventLoading } = useEventCheck();
 
-    // Redirect if already authenticated
+    // Redirect after successful login with a brief delay
     React.useEffect(() => {
-        if (isAuthenticated && !loading && !eventLoading) {
-            // Check if user has an event
-            if (hasEvent) {
-                navigate('/dashboard');
-            } else {
-                navigate('/create-event');
-            }
+        if (loginSuccess && isAuthenticated && !loading && !eventLoading) {
+            const timer = setTimeout(() => {
+                // Check if user has an event
+                if (hasEvent) {
+                    navigate('/dashboard');
+                } else {
+                    navigate('/create-event');
+                }
+            }, 1500); // 1.5 second delay to show success message
+
+            return () => clearTimeout(timer);
         }
-    }, [isAuthenticated, loading, eventLoading, hasEvent, navigate]);
+    }, [loginSuccess, isAuthenticated, loading, eventLoading, hasEvent, navigate]);
 
     // התחברות עם אימייל וסיסמה
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
+        setLoginSuccess(false);
         
         try {
             await loginWithEmail(email, password);
-            // Navigation will happen automatically via useEffect
+            setLoginSuccess(true);
         } catch (err) {
             setError(err.message);
         }
@@ -41,10 +47,11 @@ const LoginPage = () => {
     // התחברות עם גוגל
     const handleGoogleSignIn = async () => {
         setError(null);
+        setLoginSuccess(false);
         
         try {
             await loginWithGoogle();
-            // Navigation will happen automatically via useEffect
+            setLoginSuccess(true);
         } catch (err) {
             setError(err.message);
         }
@@ -53,10 +60,11 @@ const LoginPage = () => {
     // התחברות עם פייסבוק
     const handleFacebookSignIn = async () => {
         setError(null);
+        setLoginSuccess(false);
         
         try {
             await loginWithFacebook();
-            // Navigation will happen automatically via useEffect
+            setLoginSuccess(true);
         } catch (err) {
             setError(err.message);
         }
@@ -100,10 +108,11 @@ const LoginPage = () => {
                     {/* שינוי 3: הוספת קישור "שכחתי סיסמה" */}
                     <a href="/forgot-password" className="forgot-password">שכחתי סיסמה?</a>
 
-                    <button type="submit" className="login-btn" disabled={loading || eventLoading}>
-                        {loading || eventLoading ? 'מתחבר...' : 'התחברות'}
+                    <button type="submit" className="login-btn" disabled={loading || eventLoading || loginSuccess}>
+                        {loading || eventLoading ? 'מתחבר...' : loginSuccess ? 'התחברת בהצלחה!' : 'התחברות'}
                     </button>
                     
+                    {loginSuccess && <p className="success-message">התחברת בהצלחה! מעביר אותך לדשבורד...</p>}
                     {error && <p className="error-message">{error}</p>}
 
                     <div className="divider">
@@ -111,10 +120,10 @@ const LoginPage = () => {
 
                     {/* שינוי 4: כפתורי התחברות חברתיים */}
                     <div className="social-login">
-                        <button type="button" onClick={handleFacebookSignIn} className="social-icon facebook" aria-label="התחבר עם פייסבוק" disabled={loading || eventLoading}>
+                        <button type="button" onClick={handleFacebookSignIn} className="social-icon facebook" aria-label="התחבר עם פייסבוק" disabled={loading || eventLoading || loginSuccess}>
                             <i className="fa-brands fa-facebook-f"></i>
                         </button>
-                        <button type="button" onClick={handleGoogleSignIn} className="social-icon google" aria-label="התחבר עם גוגל" disabled={loading || eventLoading}>
+                        <button type="button" onClick={handleGoogleSignIn} className="social-icon google" aria-label="התחבר עם גוגל" disabled={loading || eventLoading || loginSuccess}>
                             <i className="fa-brands fa-google"></i>
                         </button>
                     </div>

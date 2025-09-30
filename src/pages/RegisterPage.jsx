@@ -13,6 +13,7 @@ const RegisterPage = () => {
     const [password, setPassword] = useState('');
     const [gender, setGender] = useState('');
     const [error, setError] = useState('');
+    const [registerSuccess, setRegisterSuccess] = useState(false);
     const [passwordRequirements, setPasswordRequirements] = useState({
         length: false,
         uppercase: false,
@@ -24,17 +25,21 @@ const RegisterPage = () => {
     const { registerWithEmail, loginWithGoogle, loading, isAuthenticated } = useAuth();
     const { hasEvent, loading: eventLoading } = useEventCheck();
 
-    // Redirect if already authenticated
+    // Redirect after successful registration with a brief delay
     React.useEffect(() => {
-        if (isAuthenticated && !loading && !eventLoading) {
-            // Check if user has an event
-            if (hasEvent) {
-                navigate('/dashboard');
-            } else {
-                navigate('/create-event');
-            }
+        if (registerSuccess && isAuthenticated && !loading && !eventLoading) {
+            const timer = setTimeout(() => {
+                // Check if user has an event
+                if (hasEvent) {
+                    navigate('/dashboard');
+                } else {
+                    navigate('/create-event');
+                }
+            }, 1500); // 1.5 second delay to show success message
+
+            return () => clearTimeout(timer);
         }
-    }, [isAuthenticated, loading, eventLoading, hasEvent, navigate]);
+    }, [registerSuccess, isAuthenticated, loading, eventLoading, hasEvent, navigate]);
 
     // Check password requirements
     const checkPasswordRequirements = (password) => {
@@ -58,10 +63,11 @@ const RegisterPage = () => {
 
     const handleGoogleSignIn = async () => {
         setError('');
+        setRegisterSuccess(false);
         
         try {
             await loginWithGoogle();
-            // Navigation will happen automatically via useEffect
+            setRegisterSuccess(true);
         } catch (err) {
             setError(err.message);
         }
@@ -76,6 +82,7 @@ const RegisterPage = () => {
         }
         
         setError('');
+        setRegisterSuccess(false);
         
         try {
             const userData = {
@@ -89,7 +96,7 @@ const RegisterPage = () => {
             };
             
             await registerWithEmail(userData);
-            // Navigation will happen automatically via useEffect
+            setRegisterSuccess(true);
         } catch (err) {
             setError(err.message);
         }
@@ -224,8 +231,8 @@ return (
                     </div>
                 </div>
                 
-                <button type="submit" className="submit-btn" disabled={loading || eventLoading || !isPasswordValid()}>
-                    {loading || eventLoading ? 'מעבד...' : 'השלם הרשמה'}
+                <button type="submit" className="submit-btn" disabled={loading || eventLoading || !isPasswordValid() || registerSuccess}>
+                    {loading || eventLoading ? 'מעבד...' : registerSuccess ? 'נרשמת בהצלחה!' : 'השלם הרשמה'}
                 </button>
 
                 <div className="divider">
@@ -235,16 +242,17 @@ return (
                 <button 
                     type="button" 
                     onClick={handleGoogleSignIn}
-                    disabled={loading || eventLoading}
+                    disabled={loading || eventLoading || registerSuccess}
                     className="google-btn"
                 >
-                    {loading || eventLoading ? 'מעבד...' : 'הירשם עם Google'}
+                    {loading || eventLoading ? 'מעבד...' : registerSuccess ? 'נרשמת בהצלחה!' : 'הירשם עם Google'}
                 </button>
 
                 <div className="form-footer">
                     <p>כבר יש לך חשבון? <a href="/login">התחבר כאן</a></p>
                 </div>
 
+                {registerSuccess && <div className="success-message">נרשמת בהצלחה! מעביר אותך לדשבורד...</div>}
                 {error && <div className="error-message">{error}</div>}
             </form>
         </div>

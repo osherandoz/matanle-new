@@ -240,6 +240,17 @@
     color: var(--raw-umber); text-decoration: underline;
 }
 
+.success-message {
+    color: #28a745;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    text-align: center;
+}
+
 .error-message {
     color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; text-align: center;
 }
