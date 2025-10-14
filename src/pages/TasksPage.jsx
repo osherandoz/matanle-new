@@ -1,101 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useEventCheck } from "../hooks/useEventCheck";
+import { useEventSubcollections } from "../hooks/useEventSubcollections";
 import { useToast } from "../components/Toast/Toast";
-
-// Mock tasks data
-const mockTasks = [
-  {
-    id: 1,
-    title: "הזמנת אולם",
-    description: "לחפש ולהזמין אולם לחתונה",
-    priority: "גבוהה",
-    dueDate: "2024-03-15",
-    status: "חדש",
-    category: "מקום",
-    createdDate: "2024-01-10"
-  },
-  {
-    id: 2,
-    title: "הזמנת צלם",
-    description: "למצוא צלם מקצועי לחתונה",
-    priority: "גבוהה",
-    dueDate: "2024-03-20",
-    status: "בביצוע",
-    category: "צילום",
-    createdDate: "2024-01-12"
-  },
-  {
-    id: 3,
-    title: "בחירת תפריט",
-    description: "לבחור תפריט עם הקייטרינג",
-    priority: "בינונית",
-    dueDate: "2024-04-01",
-    status: "בביצוע",
-    category: "קייטרינג",
-    createdDate: "2024-01-15"
-  },
-  {
-    id: 4,
-    title: "הזמנת פרחים",
-    description: "לבחור זרי פרחים לחתונה",
-    priority: "נמוכה",
-    dueDate: "2024-05-01",
-    status: "חדש",
-    category: "פרחים",
-    createdDate: "2024-01-18"
-  },
-  {
-    id: 5,
-    title: "רשימת מוזמנים",
-    description: "להכין רשימה סופית של המוזמנים",
-    priority: "גבוהה",
-    dueDate: "2024-04-15",
-    status: "הושלם",
-    category: "תכנון",
-    createdDate: "2024-01-08"
-  },
-  {
-    id: 6,
-    title: "הזמנת DJ",
-    description: "למצוא DJ למוזיקה בחתונה",
-    priority: "בינונית",
-    dueDate: "2024-04-10",
-    status: "הושלם",
-    category: "בידור",
-    createdDate: "2024-01-20"
-  },
-  {
-    id: 7,
-    title: "בחירת שמלת כלה",
-    description: "למצוא ולהזמין שמלת כלה",
-    priority: "גבוהה",
-    dueDate: "2024-03-30",
-    status: "בביצוע",
-    category: "אופנה",
-    createdDate: "2024-01-25"
-  },
-  {
-    id: 8,
-    title: "הזמנת עוגת חתונה",
-    description: "לבחור ולהזמין עוגת חתונה",
-    priority: "בינונית",
-    dueDate: "2024-04-20",
-    status: "חדש",
-    category: "קייטרינג",
-    createdDate: "2024-01-30"
-  }
-];
 
 const priorities = ["הכל", "גבוהה", "בינונית", "נמוכה"];
 const categories = ["הכל", "מקום", "צילום", "קייטרינג", "פרחים", "בידור", "אופנה", "תכנון"];
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(mockTasks);
-  const { showSuccess, showInfo } = useToast();
+  const { currentEvent } = useEventCheck();
+  const { getItems, addItem, updateItem, deleteItem } = useEventSubcollections(currentEvent?.id);
+  const { showSuccess, showInfo, showError } = useToast();
+  
+  const [tasks, setTasks] = useState([]);
   const [activeTab, setActiveTab] = useState("חדש"); // "חדש", "בביצוע", "הושלם"
   const [filterPriority, setFilterPriority] = useState("הכל");
   const [filterCategory, setFilterCategory] = useState("הכל");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -103,6 +25,26 @@ export default function TasksPage() {
     category: "תכנון",
     dueDate: ""
   });
+
+  // Load tasks when component mounts or currentEvent changes
+  useEffect(() => {
+    const loadTasks = async () => {
+      if (!currentEvent?.id) {
+        setTasks([]);
+        return;
+      }
+
+      try {
+        const tasksData = await getItems('tasks');
+        setTasks(tasksData);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        // Silent error - don't show to user, just keep empty state
+      }
+    };
+
+    loadTasks();
+  }, [currentEvent?.id, getItems]);
 
   // Filter tasks by active tab and filters
   const filteredTasks = tasks
@@ -132,21 +74,36 @@ export default function TasksPage() {
   const pendingTasks = tasks.filter(t => t.status === "בביצוע").length;
   const completedTasks = tasks.filter(t => t.status === "הושלם").length;
 
-  const handleStatusChange = (taskId, newStatus) => {
+  const handleStatusChange = async (taskId, newStatus) => {
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
+
     const task = tasks.find(t => t.id === taskId);
-    setTasks(prevTasks => 
-      prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: newStatus } : t
-      )
-    );
     
-    // Show success message based on status change
-    if (newStatus === "בביצוע") {
-      showInfo(`המשימה "${task?.title}" הועברה לביצוע`);
-    } else if (newStatus === "הושלם") {
-      showSuccess(`המשימה "${task?.title}" הושלמה בהצלחה!`);
-    } else if (newStatus === "חדש") {
-      showInfo(`המשימה "${task?.title}" הועברה חזרה למשימות חדשות`);
+    try {
+      // Update in database
+      await updateItem('tasks', taskId, { status: newStatus });
+      
+      // Update local state
+      setTasks(prevTasks => 
+        prevTasks.map(t => 
+          t.id === taskId ? { ...t, status: newStatus } : t
+        )
+      );
+      
+      // Show success message based on status change
+      if (newStatus === "בביצוע") {
+        showInfo(`המשימה "${task?.title}" הועברה לביצוע`);
+      } else if (newStatus === "הושלם") {
+        showSuccess(`המשימה "${task?.title}" הושלמה בהצלחה!`);
+      } else if (newStatus === "חדש") {
+        showInfo(`המשימה "${task?.title}" הועברה חזרה למשימות חדשות`);
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      showError('שגיאה בעדכון סטטוס המשימה');
     }
   };
 
@@ -176,42 +133,151 @@ export default function TasksPage() {
     return new Date(dueDate) < new Date();
   };
 
-  const handleAddTask = (e) => {
+  const handleAddTask = async (e) => {
     e.preventDefault();
+    
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
     
     // Basic validation
     if (!newTask.title.trim() || !newTask.description.trim() || !newTask.dueDate) {
-      alert("אנא מלא את כל השדות הנדרשים");
+      showError("אנא מלא את כל השדות הנדרשים");
       return;
     }
 
-    // Create new task object
-    const task = {
-      id: Math.max(...tasks.map(t => t.id)) + 1,
-      title: newTask.title.trim(),
-      description: newTask.description.trim(),
-      priority: newTask.priority,
-      dueDate: newTask.dueDate,
-      status: "חדש",
-      category: newTask.category,
-      createdDate: new Date().toISOString().split('T')[0]
-    };
+    try {
+      // Create task data for database
+      const taskData = {
+        title: newTask.title.trim(),
+        description: newTask.description.trim(),
+        priority: newTask.priority,
+        dueDate: newTask.dueDate,
+        status: "חדש",
+        category: newTask.category
+      };
 
-    // Add to tasks list
-    setTasks(prevTasks => [...prevTasks, task]);
-    
-    // Show success message
-    showSuccess(`המשימה "${task.title}" נוספה בהצלחה!`);
-    
-    // Reset form and close modal
+      // Add to database
+      const newTaskDoc = await addItem('tasks', taskData);
+      
+      // Update local state
+      setTasks(prevTasks => [...prevTasks, newTaskDoc]);
+      
+      // Show success message
+      showSuccess(`המשימה "${taskData.title}" נוספה בהצלחה!`);
+      
+      // Reset form and close modal
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "בינונית",
+        category: "תכנון",
+        dueDate: ""
+      });
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error adding task:', error);
+      showError('שגיאה בהוספת המשימה');
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
     setNewTask({
-      title: "",
-      description: "",
-      priority: "בינונית",
-      category: "תכנון",
-      dueDate: ""
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      category: task.category,
+      dueDate: task.dueDate
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
+  };
+
+  const handleUpdateTask = async (e) => {
+    e.preventDefault();
+    
+    if (!currentEvent?.id || !editingTask) {
+      showError('שגיאה בעדכון המשימה');
+      return;
+    }
+    
+    // Basic validation
+    if (!newTask.title.trim() || !newTask.description.trim() || !newTask.dueDate) {
+      showError("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    try {
+      // Create updated task data
+      const updatedData = {
+        title: newTask.title.trim(),
+        description: newTask.description.trim(),
+        priority: newTask.priority,
+        category: newTask.category,
+        dueDate: newTask.dueDate
+      };
+
+      // Update in database
+      const updatedTask = await updateItem('tasks', editingTask.id, updatedData);
+      
+      // Update local state
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === editingTask.id ? updatedTask : task
+        )
+      );
+      
+      // Show success message
+      showSuccess('המשימה עודכנה בהצלחה!');
+      
+      // Reset form and close modal
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "בינונית",
+        category: "תכנון",
+        dueDate: ""
+      });
+      setEditingTask(null);
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error updating task:', error);
+      showError('שגיאה בעדכון המשימה');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!currentEvent?.id) {
+      showError('שגיאה במחיקת המשימה');
+      return;
+    }
+
+    const task = tasks.find(t => t.id === taskId);
+
+    // Show confirmation dialog
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את המשימה "${task?.title}"?`)) {
+      return;
+    }
+
+    try {
+      // Delete from database
+      await deleteItem('tasks', taskId);
+      
+      // Update local state
+      setTasks(prevTasks => 
+        prevTasks.filter(task => task.id !== taskId)
+      );
+      
+      // Show success message
+      showSuccess('המשימה נמחקה בהצלחה');
+      
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      showError('שגיאה במחיקת המשימה');
+    }
   };
 
   const handleCancelAdd = () => {
@@ -222,6 +288,7 @@ export default function TasksPage() {
       category: "תכנון",
       dueDate: ""
     });
+    setEditingTask(null);
     setShowAddForm(false);
   };
 
@@ -466,10 +533,16 @@ export default function TasksPage() {
                     )}
                   </div>
                   <div className="action-buttons">
-                    <button className="action-btn edit">
+                    <button 
+                      className="action-btn edit"
+                      onClick={() => handleEditTask(task)}
+                    >
                       <i className="fa-solid fa-edit"></i>
                     </button>
-                    <button className="action-btn delete">
+                    <button 
+                      className="action-btn delete"
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
                       <i className="fa-solid fa-trash"></i>
                     </button>
                   </div>
@@ -480,21 +553,21 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* Add Task Modal */}
+      {/* Add/Edit Task Modal */}
       {showAddForm && (
         <div className="modal-overlay" onClick={handleCancelAdd}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fa-solid fa-plus"></i>
-                הוספת משימה חדשה
+                <i className={`fa-solid ${editingTask ? 'fa-edit' : 'fa-plus'}`}></i>
+                {editingTask ? 'עריכת משימה' : 'הוספת משימה חדשה'}
               </h2>
               <button className="modal-close" onClick={handleCancelAdd}>
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
             
-            <form onSubmit={handleAddTask} className="task-form">
+            <form onSubmit={editingTask ? handleUpdateTask : handleAddTask} className="task-form">
               <div className="form-group">
                 <label htmlFor="taskTitle">
                   <i className="fa-solid fa-heading"></i>
@@ -580,8 +653,8 @@ export default function TasksPage() {
 
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  <i className="fa-solid fa-plus"></i>
-                  הוסף משימה
+                  <i className={`fa-solid ${editingTask ? 'fa-save' : 'fa-plus'}`}></i>
+                  {editingTask ? 'עדכן משימה' : 'הוסף משימה'}
                 </button>
                 <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
                   <i className="fa-solid fa-times"></i>
