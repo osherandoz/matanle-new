@@ -15,13 +15,11 @@ const CreateEventPage = () => {
     const { createEvent, loading } = useEventCheck();
 
     const eventTypes = [
-        'חתונה',
-        'בר/בת מצווה',
+        'בר מצווה',
+        'בת מצווה',
         'ברית',
+        'בריתה',
         'יום הולדת',
-        'אירוס',
-        'יום נישואין',
-        'חגיגה משפחתית',
         'אחר'
     ];
 
