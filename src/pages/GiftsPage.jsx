@@ -1,110 +1,17 @@
 import React, { useState, useEffect } from "react";
-
-// Mock gifts data
-const mockGifts = [
-  {
-    id: 1,
-    name: "מכונת קפה דלונגי",
-    purchaseLink: "https://www.amazon.com/delonghi-coffee-machine",
-    price: 899,
-    image: "https://via.placeholder.com/300x200?text=מכונת+קפה",
-    reservedBy: "יוסי כהן", // This will come from guest DB later
-    reservedById: 1, // Guest ID for future integration
-    isReserved: true,
-    isPurchased: false,
-    reservedDate: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "סט כלים 24 חלקים",
-    purchaseLink: "https://www.ikea.com/cutlery-set",
-    price: 299,
-    image: "https://via.placeholder.com/300x200?text=סט+כלים",
-    reservedBy: null,
-    reservedById: null,
-    isReserved: false,
-    isPurchased: false,
-    reservedDate: null
-  },
-  {
-    id: 3,
-    name: "מיקסר קיטצ'נאייד",
-    purchaseLink: "https://www.kitchenaid.com/mixer",
-    price: 1299,
-    image: "https://via.placeholder.com/300x200?text=מיקסר",
-    reservedBy: "רחל לוי",
-    reservedById: 2,
-    isReserved: true,
-    isPurchased: true,
-    reservedDate: "2024-01-10"
-  },
-  {
-    id: 4,
-    name: "מערכת סאונד בלוטוס",
-    purchaseLink: "https://www.bose.com/bluetooth-speaker",
-    price: 599,
-    image: "https://via.placeholder.com/300x200?text=רמקול",
-    reservedBy: "דני ופטרה גרין",
-    reservedById: 3,
-    isReserved: true,
-    isPurchased: false,
-    reservedDate: "2024-01-20"
-  },
-  {
-    id: 5,
-    name: "מצעים איכותיים",
-    purchaseLink: "https://www.bedding.com/luxury-sheets",
-    price: 399,
-    image: "https://via.placeholder.com/300x200?text=מצעים",
-    reservedBy: null,
-    reservedById: null,
-    isReserved: false,
-    isPurchased: false,
-    reservedDate: null
-  },
-  {
-    id: 6,
-    name: "מעבד מזון",
-    purchaseLink: "https://www.cuisinart.com/food-processor",
-    price: 449,
-    image: "https://via.placeholder.com/300x200?text=מעבד+מזון",
-    reservedBy: "סבתא שרה",
-    reservedById: 6,
-    isReserved: true,
-    isPurchased: true,
-    reservedDate: "2024-01-08"
-  },
-  {
-    id: 7,
-    name: "שואב אבק רובוטי",
-    purchaseLink: "https://www.irobot.com/roomba",
-    price: 899,
-    image: "https://via.placeholder.com/300x200?text=רומבה",
-    reservedBy: null,
-    reservedById: null,
-    isReserved: false,
-    isPurchased: false,
-    reservedDate: null
-  },
-  {
-    id: 8,
-    name: "סט מחבתות איכותיות",
-    purchaseLink: "https://www.tefal.com/pan-set",
-    price: 299,
-    image: "https://via.placeholder.com/300x200?text=מחבתות",
-    reservedBy: "חברי העבודה",
-    reservedById: 8,
-    isReserved: true,
-    isPurchased: false,
-    reservedDate: "2024-01-25"
-  }
-];
+import { useEventCheck } from "../hooks/useEventCheck";
+import { useEventSubcollections } from "../hooks/useEventSubcollections";
+import { useToast } from "../components/Toast/Toast";
 
 const statusFilters = ["הכל", "זמין", "שמור", "נרכש"];
 const priceRanges = ["הכל", "עד 200₪", "200-500₪", "500-1000₪", "מעל 1000₪"];
 
 export default function GiftsPage() {
-  const [gifts, setGifts] = useState(mockGifts);
+  const { currentEvent } = useEventCheck();
+  const { getGifts, addGift, updateGift, deleteGift } = useEventSubcollections(currentEvent?.id);
+  const { showSuccess, showError } = useToast();
+  
+  const [gifts, setGifts] = useState([]);
   const [viewMode, setViewMode] = useState("grid"); // "table" or "grid"
   const [filterStatus, setFilterStatus] = useState("הכל");
   const [filterPriceRange, setFilterPriceRange] = useState("הכל");
@@ -112,12 +19,33 @@ export default function GiftsPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingGift, setEditingGift] = useState(null);
   const [newGift, setNewGift] = useState({
     name: "",
     purchaseLink: "",
     price: "",
     image: ""
   });
+
+  // Load gifts when component mounts or currentEvent changes
+  useEffect(() => {
+    const loadGifts = async () => {
+      if (!currentEvent?.id) {
+        setGifts([]);
+        return;
+      }
+
+      try {
+        const giftsData = await getGifts();
+        setGifts(giftsData);
+      } catch (error) {
+        console.error('Error loading gifts:', error);
+        // Silent error - don't show to user, just keep empty state
+      }
+    };
+
+    loadGifts();
+  }, [currentEvent?.id, getGifts]);
 
   // Filter and sort gifts
   const filteredGifts = gifts
@@ -182,88 +110,239 @@ export default function GiftsPage() {
     return "זמין";
   };
 
-  const handleReserveGift = (giftId) => {
-    // TODO: In the future, this will show a modal to select a guest
-    const guestName = prompt("שם המוזמן ששומר את המתנה:");
-    if (guestName) {
-      setGifts(prevGifts => 
-        prevGifts.map(gift => 
-          gift.id === giftId 
-            ? { 
-                ...gift, 
-                isReserved: true, 
-                reservedBy: guestName,
-                reservedDate: new Date().toISOString().split('T')[0]
-              }
-            : gift
-        )
-      );
-    }
-  };
-
-  const handleReleaseGift = (giftId) => {
-    if (confirm("האם אתה בטוח שברצונך לשחרר את המתנה?")) {
-      setGifts(prevGifts => 
-        prevGifts.map(gift => 
-          gift.id === giftId 
-            ? { 
-                ...gift, 
-                isReserved: false, 
-                reservedBy: null,
-                reservedById: null,
-                reservedDate: null,
-                isPurchased: false
-              }
-            : gift
-        )
-      );
-    }
-  };
-
-  const handleTogglePurchased = (giftId) => {
-    setGifts(prevGifts => 
-      prevGifts.map(gift => 
-        gift.id === giftId 
-          ? { ...gift, isPurchased: !gift.isPurchased }
-          : gift
-      )
-    );
-  };
-
-  const handleAddGift = (e) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
-      alert("אנא מלא את כל השדות הנדרשים");
+  const handleReserveGift = async (giftId) => {
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
       return;
     }
 
-    // Create new gift object
-    const gift = {
-      id: Math.max(...gifts.map(g => g.id)) + 1,
-      name: newGift.name.trim(),
-      purchaseLink: newGift.purchaseLink.trim(),
-      price: parseInt(newGift.price),
-      image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name),
-      reservedBy: null,
-      reservedById: null,
-      isReserved: false,
-      isPurchased: false,
-      reservedDate: null
-    };
+    // TODO: In the future, this will show a modal to select a guest
+    const guestName = prompt("שם המוזמן ששומר את המתנה:");
+    if (guestName) {
+      try {
+        const updatedData = {
+          isReserved: true,
+          reservedBy: guestName,
+          reservedDate: new Date().toISOString().split('T')[0]
+        };
 
-    // Add to gifts list
-    setGifts(prevGifts => [...prevGifts, gift]);
+        await updateGift(giftId, updatedData);
+
+        setGifts(prevGifts => 
+          prevGifts.map(gift => 
+            gift.id === giftId ? { ...gift, ...updatedData } : gift
+          )
+        );
+
+        showSuccess(`המתנה נשמרה עבור ${guestName}`);
+      } catch (error) {
+        console.error('Error reserving gift:', error);
+        showError('שגיאה בשמירת המתנה');
+      }
+    }
+  };
+
+  const handleReleaseGift = async (giftId) => {
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
+
+    if (confirm("האם אתה בטוח שברצונך לשחרר את המתנה?")) {
+      try {
+        const updatedData = {
+          isReserved: false,
+          reservedBy: null,
+          reservedById: null,
+          reservedDate: null,
+          isPurchased: false
+        };
+
+        await updateGift(giftId, updatedData);
+
+        setGifts(prevGifts => 
+          prevGifts.map(gift => 
+            gift.id === giftId ? { ...gift, ...updatedData } : gift
+          )
+        );
+
+        showSuccess('המתנה שוחררה בהצלחה');
+      } catch (error) {
+        console.error('Error releasing gift:', error);
+        showError('שגיאה בשחרור המתנה');
+      }
+    }
+  };
+
+  const handleTogglePurchased = async (giftId) => {
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
+
+    const gift = gifts.find(g => g.id === giftId);
+    const newPurchasedStatus = !gift.isPurchased;
+
+    try {
+      await updateGift(giftId, { isPurchased: newPurchasedStatus });
+
+      setGifts(prevGifts => 
+        prevGifts.map(g => 
+          g.id === giftId ? { ...g, isPurchased: newPurchasedStatus } : g
+        )
+      );
+
+      showSuccess(newPurchasedStatus ? 'המתנה סומנה כנרכשה' : 'המתנה סומנה כלא נרכשה');
+    } catch (error) {
+      console.error('Error toggling purchased status:', error);
+      showError('שגיאה בעדכון סטטוס הרכישה');
+    }
+  };
+
+  const handleAddGift = async (e) => {
+    e.preventDefault();
     
-    // Reset form and close modal
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
+    
+    // Basic validation
+    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
+      showError("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    try {
+      // Create gift data for database
+      const giftData = {
+        name: newGift.name.trim(),
+        purchaseLink: newGift.purchaseLink.trim(),
+        price: parseInt(newGift.price),
+        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name),
+        reservedBy: null,
+        reservedById: null,
+        isReserved: false,
+        isPurchased: false,
+        reservedDate: null
+      };
+
+      // Add to database
+      const newGiftDoc = await addGift(giftData);
+      
+      // Update local state
+      setGifts(prevGifts => [...prevGifts, newGiftDoc]);
+      
+      // Show success message
+      showSuccess(`המתנה "${giftData.name}" נוספה בהצלחה!`);
+      
+      // Reset form and close modal
+      setNewGift({
+        name: "",
+        purchaseLink: "",
+        price: "",
+        image: ""
+      });
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error adding gift:', error);
+      showError('שגיאה בהוספת המתנה');
+    }
+  };
+
+  const handleEditGift = (gift) => {
+    setEditingGift(gift);
     setNewGift({
-      name: "",
-      purchaseLink: "",
-      price: "",
-      image: ""
+      name: gift.name,
+      purchaseLink: gift.purchaseLink,
+      price: gift.price.toString(),
+      image: gift.image || ""
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
+  };
+
+  const handleUpdateGift = async (e) => {
+    e.preventDefault();
+    
+    if (!currentEvent?.id || !editingGift) {
+      showError('שגיאה בעדכון המתנה');
+      return;
+    }
+    
+    // Basic validation
+    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
+      showError("אנא מלא את כל השדות הנדרשים");
+      return;
+    }
+
+    try {
+      // Create updated gift data
+      const updatedData = {
+        name: newGift.name.trim(),
+        purchaseLink: newGift.purchaseLink.trim(),
+        price: parseInt(newGift.price),
+        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name)
+      };
+
+      // Update in database
+      const updatedGiftDoc = await updateGift(editingGift.id, updatedData);
+      
+      // Update local state
+      setGifts(prevGifts => 
+        prevGifts.map(gift => 
+          gift.id === editingGift.id ? updatedGiftDoc : gift
+        )
+      );
+      
+      // Show success message
+      showSuccess('המתנה עודכנה בהצלחה!');
+      
+      // Reset form and close modal
+      setNewGift({
+        name: "",
+        purchaseLink: "",
+        price: "",
+        image: ""
+      });
+      setEditingGift(null);
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error updating gift:', error);
+      showError('שגיאה בעדכון המתנה');
+    }
+  };
+
+  const handleDeleteGift = async (giftId) => {
+    if (!currentEvent?.id) {
+      showError('שגיאה במחיקת המתנה');
+      return;
+    }
+
+    const gift = gifts.find(g => g.id === giftId);
+
+    // Show confirmation dialog
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${gift?.name}"?`)) {
+      return;
+    }
+
+    try {
+      // Delete from database
+      await deleteGift(giftId);
+      
+      // Update local state
+      setGifts(prevGifts => 
+        prevGifts.filter(gift => gift.id !== giftId)
+      );
+      
+      // Show success message
+      showSuccess('המתנה נמחקה בהצלחה');
+      
+    } catch (error) {
+      console.error('Error deleting gift:', error);
+      showError('שגיאה במחיקת המתנה');
+    }
   };
 
   const handleCancelAdd = () => {
@@ -273,6 +352,7 @@ export default function GiftsPage() {
       price: "",
       image: ""
     });
+    setEditingGift(null);
     setShowAddForm(false);
   };
 
@@ -512,10 +592,16 @@ export default function GiftsPage() {
                               <i className={`fa-solid ${gift.isPurchased ? 'fa-check-circle' : 'fa-shopping-cart'}`}></i>
                             </button>
                           )}
-                          <button className="action-btn edit">
+                          <button 
+                            className="action-btn edit"
+                            onClick={() => handleEditGift(gift)}
+                          >
                             <i className="fa-solid fa-edit"></i>
                           </button>
-                          <button className="action-btn delete">
+                          <button 
+                            className="action-btn delete"
+                            onClick={() => handleDeleteGift(gift.id)}
+                          >
                             <i className="fa-solid fa-trash"></i>
                           </button>
                         </div>
@@ -605,10 +691,16 @@ export default function GiftsPage() {
                     )}
                     
                     <div className="secondary-actions">
-                      <button className="action-btn edit small">
+                      <button 
+                        className="action-btn edit small"
+                        onClick={() => handleEditGift(gift)}
+                      >
                         <i className="fa-solid fa-edit"></i>
                       </button>
-                      <button className="action-btn delete small">
+                      <button 
+                        className="action-btn delete small"
+                        onClick={() => handleDeleteGift(gift.id)}
+                      >
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </div>
@@ -620,21 +712,21 @@ export default function GiftsPage() {
         )}
       </div>
 
-      {/* Add Gift Modal */}
+      {/* Add/Edit Gift Modal */}
       {showAddForm && (
         <div className="modal-overlay" onClick={handleCancelAdd}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fa-solid fa-plus"></i>
-                הוספת מתנה חדשה
+                <i className={`fa-solid ${editingGift ? 'fa-edit' : 'fa-plus'}`}></i>
+                {editingGift ? 'עריכת מתנה' : 'הוספת מתנה חדשה'}
               </h2>
               <button className="modal-close" onClick={handleCancelAdd}>
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
             
-            <form onSubmit={handleAddGift} className="gift-form">
+            <form onSubmit={editingGift ? handleUpdateGift : handleAddGift} className="gift-form">
               <div className="form-group">
                 <label htmlFor="giftName">
                   <i className="fa-solid fa-gift"></i>
@@ -700,8 +792,8 @@ export default function GiftsPage() {
 
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  <i className="fa-solid fa-plus"></i>
-                  הוסף מתנה
+                  <i className={`fa-solid ${editingGift ? 'fa-save' : 'fa-plus'}`}></i>
+                  {editingGift ? 'עדכן מתנה' : 'הוסף מתנה'}
                 </button>
                 <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
                   <i className="fa-solid fa-times"></i>

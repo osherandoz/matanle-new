@@ -1,94 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useEventCheck } from "../hooks/useEventCheck";
+import { useEventSubcollections } from "../hooks/useEventSubcollections";
+import { useToast } from "../components/Toast/Toast";
 
-// Mock guests data
-const mockGuests = [
-  {
-    id: 1,
-    fullName: "יוסי כהן",
-    phone: "052-1234567",
-    adults: 2,
-    kids: 1,
-    relative: "צד החתן",
-    notes: "דורש מקום נגיש לכיסא גלגלים",
-    status: "מאשר"
-  },
-  {
-    id: 2,
-    fullName: "רחל לוי",
-    phone: "054-9876543",
-    adults: 1,
-    kids: 0,
-    relative: "צד הכלה",
-    notes: "צמחונית",
-    status: "מאשר"
-  },
-  {
-    id: 3,
-    fullName: "דני ופטרה גרין",
-    phone: "050-5555555",
-    adults: 2,
-    kids: 2,
-    relative: "צד החתן",
-    notes: "יגיעו מאוחר - עד 19:30",
-    status: "מאשר"
-  },
-  {
-    id: 4,
-    fullName: "משפחת רוזנברג",
-    phone: "03-8887777",
-    adults: 4,
-    kids: 3,
-    relative: "צד הכלה",
-    notes: "הילדים אלרגיים לאגוזים",
-    status: "לא החזיר תשובה"
-  },
-  {
-    id: 5,
-    fullName: "עמית ושירי מזרחי",
-    phone: "050-1111111",
-    adults: 2,
-    kids: 0,
-    relative: "צד החתן",
-    notes: "יגיעו ישירות מהעבודה",
-    status: "מאשר"
-  },
-  {
-    id: 6,
-    fullName: "סבתא שרה",
-    phone: "02-6666666",
-    adults: 1,
-    kids: 0,
-    relative: "צד הכלה",
-    notes: "צריכה עזרה בהליכה",
-    status: "מאשר"
-  },
-  {
-    id: 7,
-    fullName: "משפחת אבירם",
-    phone: "09-3333333",
-    adults: 2,
-    kids: 1,
-    relative: "צד החתן",
-    notes: "",
-    status: "לא מגיע"
-  },
-  {
-    id: 8,
-    fullName: "חברי העבודה",
-    phone: "054-7777777",
-    adults: 6,
-    kids: 0,
-    relative: "צד החתן",
-    notes: "קבוצה של חברים מהעבודה",
-    status: "מאשר"
-  }
-];
-
-const relatives = ["הכל", "צד החתן", "צד הכלה", "משפחה", "חברים"];
+const relatives = ["הכל", "צד אמא", "צד אבא", "חברים", "אחר"];
 const statuses = ["הכל", "מאשר", "לא מגיע", "לא החזיר תשובה"];
 
 export default function GuestsPage() {
-  const [guests, setGuests] = useState(mockGuests);
+  const { currentEvent } = useEventCheck();
+  const { getGuests, addGuest, updateGuest, deleteGuest } = useEventSubcollections(currentEvent?.id);
+  const { showSuccess, showError } = useToast();
+  
+  const [guests, setGuests] = useState([]);
   const [viewMode, setViewMode] = useState("grid"); // "table" or "grid"
   const [filterRelative, setFilterRelative] = useState("הכל");
   const [filterStatus, setFilterStatus] = useState("הכל");
@@ -97,14 +20,35 @@ export default function GuestsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStatus, setEditingStatus] = useState(null); // ID of guest whose status is being edited
+  const [editingGuest, setEditingGuest] = useState(null); // Guest being edited
   const [newGuest, setNewGuest] = useState({
     fullName: "",
     phone: "",
     adults: 1,
     kids: 0,
-    relative: "צד החתן",
+    relative: "צד אמא",
     notes: ""
   });
+
+  // Load guests when component mounts or currentEvent changes
+  useEffect(() => {
+    const loadGuests = async () => {
+      if (!currentEvent?.id) {
+        setGuests([]);
+        return;
+      }
+
+      try {
+        const guestsData = await getGuests();
+        setGuests(guestsData);
+      } catch (error) {
+        console.error('Error loading guests:', error);
+        // Silent error - don't show to user, just keep empty state
+      }
+    };
+
+    loadGuests();
+  }, [currentEvent?.id, getGuests]);
 
   // Filter and sort guests
   const filteredGuests = guests
@@ -128,12 +72,10 @@ export default function GuestsPage() {
       }
     });
 
-  // Calculate stats
-  const confirmedGuests = filteredGuests.filter(g => g.status === "מאשר").length;
-  const declinedGuests = filteredGuests.filter(g => g.status === "לא מגיע").length;
-  const noResponseGuests = filteredGuests.filter(g => g.status === "לא החזיר תשובה").length;
-  const totalAdults = filteredGuests.filter(g => g.status === "מאשר").reduce((sum, g) => sum + g.adults, 0);
-  const totalKids = filteredGuests.filter(g => g.status === "מאשר").reduce((sum, g) => sum + g.kids, 0);
+  // Calculate stats - using all guests from the database (not filtered)
+  const confirmedGuests = guests.filter(g => g.status === "מאשר").length;
+  const totalAdults = guests.reduce((sum, g) => sum + (g.adults || 0), 0);
+  const totalKids = guests.reduce((sum, g) => sum + (g.kids || 0), 0);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -153,13 +95,27 @@ export default function GuestsPage() {
     }
   };
 
-  const handleStatusChange = (guestId, newStatus) => {
-    setGuests(prevGuests => 
-      prevGuests.map(guest => 
-        guest.id === guestId ? { ...guest, status: newStatus } : guest
-      )
-    );
-    setEditingStatus(null);
+  const handleStatusChange = async (guestId, newStatus) => {
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
+
+    try {
+      // Update in database
+      await updateGuest(guestId, { status: newStatus });
+      
+      // Update local state
+      setGuests(prevGuests => 
+        prevGuests.map(guest => 
+          guest.id === guestId ? { ...guest, status: newStatus } : guest
+        )
+      );
+      setEditingStatus(null);
+    } catch (error) {
+      console.error('Error updating guest status:', error);
+      showError('שגיאה בעדכון סטטוס המוזמן');
+    }
   };
 
   const handleStatusClick = (guestId) => {
@@ -180,47 +136,170 @@ export default function GuestsPage() {
     };
   }, [editingStatus]);
 
-  const handleAddGuest = (e) => {
+  const handleAddGuest = async (e) => {
     e.preventDefault();
+    
+    if (!currentEvent?.id) {
+      showError('אין אירוע פעיל');
+      return;
+    }
     
     // Basic validation
     if (!newGuest.fullName.trim() || !newGuest.phone.trim()) {
-      alert("אנא מלא את השם המלא ומספר הטלפון");
+      showError("אנא מלא את השם המלא ומספר הטלפון");
       return;
     }
 
     // Validate phone number (basic Israeli phone validation)
     const phoneRegex = /^(\+972|0)?[2-9]\d{1,2}-?\d{7}$/;
     if (!phoneRegex.test(newGuest.phone.replace(/\s/g, ''))) {
-      alert("אנא הכנס מספר טלפון תקין");
+      showError("אנא הכנס מספר טלפון תקין");
       return;
     }
 
-    // Create new guest object
-    const guest = {
-      id: Math.max(...guests.map(g => g.id)) + 1,
-      fullName: newGuest.fullName.trim(),
-      phone: newGuest.phone.trim(),
-      adults: parseInt(newGuest.adults),
-      kids: parseInt(newGuest.kids),
-      relative: newGuest.relative,
-      notes: newGuest.notes.trim(),
-      status: "לא החזיר תשובה"
-    };
+    try {
+      // Create guest data for database
+      const guestData = {
+        fullName: newGuest.fullName.trim(),
+        phone: newGuest.phone.trim(),
+        adults: parseInt(newGuest.adults),
+        kids: parseInt(newGuest.kids),
+        relative: newGuest.relative,
+        notes: newGuest.notes.trim(),
+        status: "לא החזיר תשובה"
+      };
 
-    // Add to guests list
-    setGuests(prevGuests => [...prevGuests, guest]);
-    
-    // Reset form and close modal
+      // Add to database
+      const newGuestDoc = await addGuest(guestData);
+      
+      // Update local state
+      setGuests(prevGuests => [...prevGuests, newGuestDoc]);
+      
+      // Show success message
+      showSuccess(`המוזמן "${guestData.fullName}" נוסף בהצלחה!`);
+      
+      // Reset form and close modal
+      setNewGuest({
+        fullName: "",
+        phone: "",
+        adults: 1,
+        kids: 0,
+        relative: "צד אמא",
+        notes: ""
+      });
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error adding guest:', error);
+      showError('שגיאה בהוספת המוזמן');
+    }
+  };
+
+  const handleEditGuest = (guest) => {
+    setEditingGuest(guest);
     setNewGuest({
-      fullName: "",
-      phone: "",
-      adults: 1,
-      kids: 0,
-      relative: "צד החתן",
-      notes: ""
+      fullName: guest.fullName,
+      phone: guest.phone,
+      adults: guest.adults,
+      kids: guest.kids,
+      relative: guest.relative,
+      notes: guest.notes || ""
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
+  };
+
+  const handleUpdateGuest = async (e) => {
+    e.preventDefault();
+    
+    if (!currentEvent?.id || !editingGuest) {
+      showError('שגיאה בעדכון המוזמן');
+      return;
+    }
+    
+    // Basic validation
+    if (!newGuest.fullName.trim() || !newGuest.phone.trim()) {
+      showError("אנא מלא את השם המלא ומספר הטלפון");
+      return;
+    }
+
+    // Validate phone number
+    const phoneRegex = /^(\+972|0)?[2-9]\d{1,2}-?\d{7}$/;
+    if (!phoneRegex.test(newGuest.phone.replace(/\s/g, ''))) {
+      showError("אנא הכנס מספר טלפון תקין");
+      return;
+    }
+
+    try {
+      // Create updated guest data
+      const updatedData = {
+        fullName: newGuest.fullName.trim(),
+        phone: newGuest.phone.trim(),
+        adults: parseInt(newGuest.adults),
+        kids: parseInt(newGuest.kids),
+        relative: newGuest.relative,
+        notes: newGuest.notes.trim()
+      };
+
+      // Update in database
+      const updatedGuestDoc = await updateGuest(editingGuest.id, updatedData);
+      
+      // Update local state
+      setGuests(prevGuests => 
+        prevGuests.map(guest => 
+          guest.id === editingGuest.id ? updatedGuestDoc : guest
+        )
+      );
+      
+      // Show success message
+      showSuccess('המוזמן עודכן בהצלחה!');
+      
+      // Reset form and close modal
+      setNewGuest({
+        fullName: "",
+        phone: "",
+        adults: 1,
+        kids: 0,
+        relative: "צד אמא",
+        notes: ""
+      });
+      setEditingGuest(null);
+      setShowAddForm(false);
+      
+    } catch (error) {
+      console.error('Error updating guest:', error);
+      showError('שגיאה בעדכון המוזמן');
+    }
+  };
+
+  const handleDeleteGuest = async (guestId) => {
+    if (!currentEvent?.id) {
+      showError('שגיאה במחיקת המוזמן');
+      return;
+    }
+
+    const guest = guests.find(g => g.id === guestId);
+
+    // Show confirmation dialog
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${guest?.fullName}"?`)) {
+      return;
+    }
+
+    try {
+      // Delete from database
+      await deleteGuest(guestId);
+      
+      // Update local state
+      setGuests(prevGuests => 
+        prevGuests.filter(guest => guest.id !== guestId)
+      );
+      
+      // Show success message
+      showSuccess('המוזמן נמחק בהצלחה');
+      
+    } catch (error) {
+      console.error('Error deleting guest:', error);
+      showError('שגיאה במחיקת המוזמן');
+    }
   };
 
   const handleCancelAdd = () => {
@@ -229,9 +308,10 @@ export default function GuestsPage() {
       phone: "",
       adults: 1,
       kids: 0,
-      relative: "צד החתן",
+      relative: "צד אמא",
       notes: ""
     });
+    setEditingGuest(null);
     setShowAddForm(false);
   };
 
@@ -482,10 +562,16 @@ export default function GuestsPage() {
                       </td>
                       <td>
                         <div className="actions">
-                          <button className="action-btn edit">
+                          <button 
+                            className="action-btn edit"
+                            onClick={() => handleEditGuest(guest)}
+                          >
                             <i className="fa-solid fa-edit"></i>
                           </button>
-                          <button className="action-btn delete">
+                          <button 
+                            className="action-btn delete"
+                            onClick={() => handleDeleteGuest(guest.id)}
+                          >
                             <i className="fa-solid fa-trash"></i>
                           </button>
                         </div>
@@ -577,11 +663,17 @@ export default function GuestsPage() {
                 </div>
                 
                 <div className="card-actions">
-                  <button className="action-btn edit">
+                  <button 
+                    className="action-btn edit"
+                    onClick={() => handleEditGuest(guest)}
+                  >
                     <i className="fa-solid fa-edit"></i>
                     עריכה
                   </button>
-                  <button className="action-btn delete">
+                  <button 
+                    className="action-btn delete"
+                    onClick={() => handleDeleteGuest(guest.id)}
+                  >
                     <i className="fa-solid fa-trash"></i>
                     מחיקה
                   </button>
@@ -592,21 +684,21 @@ export default function GuestsPage() {
         )}
       </div>
 
-      {/* Add Guest Modal */}
+      {/* Add/Edit Guest Modal */}
       {showAddForm && (
         <div className="modal-overlay" onClick={handleCancelAdd}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fa-solid fa-user-plus"></i>
-                הוספת מוזמן חדש
+                <i className={`fa-solid ${editingGuest ? 'fa-user-edit' : 'fa-user-plus'}`}></i>
+                {editingGuest ? 'עריכת מוזמן' : 'הוספת מוזמן חדש'}
               </h2>
               <button className="modal-close" onClick={handleCancelAdd}>
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
             
-            <form onSubmit={handleAddGuest} className="guest-form">
+            <form onSubmit={editingGuest ? handleUpdateGuest : handleAddGuest} className="guest-form">
               <div className="form-group">
                 <label htmlFor="guestName">
                   <i className="fa-solid fa-user"></i>
@@ -677,10 +769,10 @@ export default function GuestsPage() {
                   value={newGuest.relative}
                   onChange={(e) => handleInputChange("relative", e.target.value)}
                 >
-                  <option value="צד החתן">צד החתן</option>
-                  <option value="צד הכלה">צד הכלה</option>
-                  <option value="משפחה">משפחה</option>
+                  <option value="צד אמא">צד אמא</option>
+                  <option value="צד אבא">צד אבא</option>
                   <option value="חברים">חברים</option>
+                  <option value="אחר">אחר</option>
                 </select>
               </div>
 
@@ -700,8 +792,8 @@ export default function GuestsPage() {
 
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
-                  <i className="fa-solid fa-user-plus"></i>
-                  הוסף מוזמן
+                  <i className={`fa-solid ${editingGuest ? 'fa-save' : 'fa-user-plus'}`}></i>
+                  {editingGuest ? 'עדכן מוזמן' : 'הוסף מוזמן'}
                 </button>
                 <button type="button" className="btn btn-secondary" onClick={handleCancelAdd}>
                   <i className="fa-solid fa-times"></i>
