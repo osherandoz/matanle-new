@@ -1,13 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function ListCard({ title, icon, headers, rows, rowFormatter }) {
+export default function ListCard({ title, icon, headers, rows, rowFormatter, linkTo }) {
+  const navigate = useNavigate();
+
   return (
     <div className="card glass list-card">
       <div className="card-head">
         <h3><i className={`fa-solid ${icon}`}></i> {title}</h3>
-        <button className="btn ghost" disabled>
-          <i className="fa-solid fa-up-right-from-square"></i> לכל הרשומות
-        </button>
+        {linkTo && (
+          <button className="btn ghost" onClick={() => navigate(linkTo)}>
+            <i className="fa-solid fa-up-right-from-square"></i> לכל הרשומות
+          </button>
+        )}
       </div>
       <div className="table">
         <div className="thead">

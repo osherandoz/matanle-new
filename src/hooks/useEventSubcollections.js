@@ -147,6 +147,11 @@ export const useEventSubcollections = (eventId) => {
   const updateGuest = (guestId, updatedData) => updateItem('guests', guestId, updatedData);
   const deleteGuest = (guestId) => deleteItem('guests', guestId);
 
+  const getTasks = () => getItems('tasks');
+  const addTask = (taskData) => addItem('tasks', taskData);
+  const updateTask = (taskId, updatedData) => updateItem('tasks', taskId, updatedData);
+  const deleteTask = (taskId) => deleteItem('tasks', taskId);
+
   return {
     loading,
     error,
@@ -180,6 +185,12 @@ export const useEventSubcollections = (eventId) => {
     getGuests,
     addGuest,
     updateGuest,
-    deleteGuest
+    deleteGuest,
+    
+    // Tasks
+    getTasks,
+    addTask,
+    updateTask,
+    deleteTask
   };
 };

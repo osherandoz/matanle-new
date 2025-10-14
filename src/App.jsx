@@ -13,6 +13,7 @@ import ExpenseTrackingPage from "./pages/ExpenseTrackingPage";
 import TasksPage from "./pages/TasksPage";
 import GuestsPage from "./pages/GuestsPage";
 import GiftsPage from "./pages/GiftsPage";
+import VendorsPage from "./pages/VendorsPage";
 import TopNavigation from "./components/Layout/TopNavigation";
 import Topbar from "./components/Layout/Topbar";
 import { ToastProvider } from "./components/Toast/Toast";
@@ -82,6 +83,11 @@ export default function App() {
         <Route path="/gifts" element={
           <DashboardLayout title="מתנות" subtitle="ניהול מתנות לאורחים">
             <GiftsPage />
+          </DashboardLayout>
+        } />
+        <Route path="/vendors" element={
+          <DashboardLayout title="ספקים" subtitle="ניהול ספקים לאירוע">
+            <VendorsPage />
           </DashboardLayout>
         } />
         <Route path="/settings" element={

@@ -9,6 +9,7 @@ export default function TopNavigation() {
     { icon: "fa-users", label: "מוזמנים", path: "/guests" },
     { icon: "fa-list-check", label: "משימות", path: "/tasks" },
     { icon: "fa-gifts", label: "מתנות", path: "/gifts" },
+    { icon: "fa-truck-fast", label: "ספקים", path: "/vendors" },
     { icon: "fa-calendar-days", label: "פרטי אירוע", path: "/event" },
     { icon: "fa-chart-line", label: "מעקב הוצאות", path: "/expenses" },
     { icon: "fa-gear", label: "הגדרות", path: "/settings" },
