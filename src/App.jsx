@@ -14,6 +14,7 @@ import TasksPage from "./pages/TasksPage";
 import GuestsPage from "./pages/GuestsPage";
 import GiftsPage from "./pages/GiftsPage";
 import VendorsPage from "./pages/VendorsPage";
+import PublicGiftsPage from "./pages/PublicGiftsPage";
 import TopNavigation from "./components/Layout/TopNavigation";
 import Topbar from "./components/Layout/Topbar";
 import { ToastProvider } from "./components/Toast/Toast";
@@ -95,6 +96,9 @@ export default function App() {
             <div>הגדרות - בפיתוח</div>
           </DashboardLayout>
         } />
+        
+        {/* Public Routes - No Dashboard Layout */}
+        <Route path="/gifts/:eventId" element={<PublicGiftsPage />} />
         </Routes>
       </ToastProvider>
     </FirebaseProvider>

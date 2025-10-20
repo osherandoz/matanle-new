@@ -15,15 +15,15 @@ export default function GiftsPage() {
   const [viewMode, setViewMode] = useState("grid"); // "table" or "grid"
   const [filterStatus, setFilterStatus] = useState("הכל");
   const [filterPriceRange, setFilterPriceRange] = useState("הכל");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("giftName");
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGift, setEditingGift] = useState(null);
   const [newGift, setNewGift] = useState({
-    name: "",
+    giftName: "",
     purchaseLink: "",
-    price: "",
+    estimatedPrice: "",
     image: ""
   });
 
@@ -55,13 +55,14 @@ export default function GiftsPage() {
         (filterStatus === "שמור" && gift.isReserved && !gift.isPurchased) ||
         (filterStatus === "נרכש" && gift.isPurchased);
       
+      const estimatedPrice = gift.estimatedPrice || 0;
       const matchesPriceRange = filterPriceRange === "הכל" ||
-        (filterPriceRange === "עד 200₪" && gift.price <= 200) ||
-        (filterPriceRange === "200-500₪" && gift.price > 200 && gift.price <= 500) ||
-        (filterPriceRange === "500-1000₪" && gift.price > 500 && gift.price <= 1000) ||
-        (filterPriceRange === "מעל 1000₪" && gift.price > 1000);
+        (filterPriceRange === "עד 200₪" && estimatedPrice <= 200) ||
+        (filterPriceRange === "200-500₪" && estimatedPrice > 200 && estimatedPrice <= 500) ||
+        (filterPriceRange === "500-1000₪" && estimatedPrice > 500 && estimatedPrice <= 1000) ||
+        (filterPriceRange === "מעל 1000₪" && estimatedPrice > 1000);
       
-      const matchesSearch = gift.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = (gift.giftName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (gift.reservedBy && gift.reservedBy.toLowerCase().includes(searchTerm.toLowerCase()));
       
       return matchesStatus && matchesPriceRange && matchesSearch;
@@ -70,9 +71,9 @@ export default function GiftsPage() {
       let aValue = a[sortBy];
       let bValue = b[sortBy];
       
-      if (sortBy === 'price') {
-        aValue = Number(aValue);
-        bValue = Number(bValue);
+      if (sortBy === 'estimatedPrice') {
+        aValue = Number(aValue || 0);
+        bValue = Number(bValue || 0);
       }
       
       if (sortOrder === "asc") {
@@ -87,7 +88,7 @@ export default function GiftsPage() {
   const availableGifts = gifts.filter(g => !g.isReserved).length;
   const reservedGifts = gifts.filter(g => g.isReserved && !g.isPurchased).length;
   const purchasedGifts = gifts.filter(g => g.isPurchased).length;
-  const totalValue = gifts.reduce((sum, g) => sum + g.price, 0);
+  const totalValue = gifts.reduce((sum, g) => sum + (g.estimatedPrice || 0), 0);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -208,7 +209,7 @@ export default function GiftsPage() {
     }
     
     // Basic validation
-    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
+    if (!newGift.giftName.trim() || !newGift.estimatedPrice || !newGift.purchaseLink.trim()) {
       showError("אנא מלא את כל השדות הנדרשים");
       return;
     }
@@ -216,10 +217,10 @@ export default function GiftsPage() {
     try {
       // Create gift data for database
       const giftData = {
-        name: newGift.name.trim(),
+        giftName: newGift.giftName.trim(),
         purchaseLink: newGift.purchaseLink.trim(),
-        price: parseInt(newGift.price),
-        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name),
+        estimatedPrice: parseInt(newGift.estimatedPrice),
+        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.giftName),
         reservedBy: null,
         reservedById: null,
         isReserved: false,
@@ -234,13 +235,13 @@ export default function GiftsPage() {
       setGifts(prevGifts => [...prevGifts, newGiftDoc]);
       
       // Show success message
-      showSuccess(`המתנה "${giftData.name}" נוספה בהצלחה!`);
+      showSuccess(`המתנה "${giftData.giftName}" נוספה בהצלחה!`);
       
       // Reset form and close modal
       setNewGift({
-        name: "",
+        giftName: "",
         purchaseLink: "",
-        price: "",
+        estimatedPrice: "",
         image: ""
       });
       setShowAddForm(false);
@@ -254,9 +255,9 @@ export default function GiftsPage() {
   const handleEditGift = (gift) => {
     setEditingGift(gift);
     setNewGift({
-      name: gift.name,
+      giftName: gift.giftName,
       purchaseLink: gift.purchaseLink,
-      price: gift.price.toString(),
+      estimatedPrice: gift.estimatedPrice.toString(),
       image: gift.image || ""
     });
     setShowAddForm(true);
@@ -271,7 +272,7 @@ export default function GiftsPage() {
     }
     
     // Basic validation
-    if (!newGift.name.trim() || !newGift.price || !newGift.purchaseLink.trim()) {
+    if (!newGift.giftName.trim() || !newGift.estimatedPrice || !newGift.purchaseLink.trim()) {
       showError("אנא מלא את כל השדות הנדרשים");
       return;
     }
@@ -279,10 +280,10 @@ export default function GiftsPage() {
     try {
       // Create updated gift data
       const updatedData = {
-        name: newGift.name.trim(),
+        giftName: newGift.giftName.trim(),
         purchaseLink: newGift.purchaseLink.trim(),
-        price: parseInt(newGift.price),
-        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.name)
+        estimatedPrice: parseInt(newGift.estimatedPrice),
+        image: newGift.image.trim() || "https://via.placeholder.com/300x200?text=" + encodeURIComponent(newGift.giftName)
       };
 
       // Update in database
@@ -300,9 +301,9 @@ export default function GiftsPage() {
       
       // Reset form and close modal
       setNewGift({
-        name: "",
+        giftName: "",
         purchaseLink: "",
-        price: "",
+        estimatedPrice: "",
         image: ""
       });
       setEditingGift(null);
@@ -323,7 +324,7 @@ export default function GiftsPage() {
     const gift = gifts.find(g => g.id === giftId);
 
     // Show confirmation dialog
-    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${gift?.name}"?`)) {
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${gift?.giftName}"?`)) {
       return;
     }
 
@@ -347,9 +348,9 @@ export default function GiftsPage() {
 
   const handleCancelAdd = () => {
     setNewGift({
-      name: "",
+      giftName: "",
       purchaseLink: "",
-      price: "",
+      estimatedPrice: "",
       image: ""
     });
     setEditingGift(null);
@@ -389,13 +390,26 @@ export default function GiftsPage() {
             </h1>
             <p>נהל את רשימת המתנות לאירוע שלך</p>
           </div>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowAddForm(true)}
-          >
-            <i className="fa-solid fa-plus"></i>
-            הוספת מתנה
-          </button>
+          <div className="header-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => {
+                const publicUrl = `${window.location.origin}/gifts/${currentEvent?.id}`;
+                navigator.clipboard.writeText(publicUrl);
+                showSuccess('הקישור הועתק ללוח!');
+              }}
+            >
+              <i className="fa-solid fa-share"></i>
+              שתף קישור
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowAddForm(true)}
+            >
+              <i className="fa-solid fa-plus"></i>
+              הוספת מתנה
+            </button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -505,15 +519,15 @@ export default function GiftsPage() {
                 <thead>
                   <tr>
                     <th>תמונה</th>
-                    <th onClick={() => handleSort("name")}>
+                    <th onClick={() => handleSort("giftName")}>
                       שם המתנה
-                      {sortBy === "name" && (
+                      {sortBy === "giftName" && (
                         <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
                       )}
                     </th>
-                    <th onClick={() => handleSort("price")}>
+                    <th onClick={() => handleSort("estimatedPrice")}>
                       מחיר
-                      {sortBy === "price" && (
+                      {sortBy === "estimatedPrice" && (
                         <i className={`fa-solid fa-chevron-${sortOrder === "asc" ? "up" : "down"}`}></i>
                       )}
                     </th>
@@ -528,16 +542,16 @@ export default function GiftsPage() {
                     <tr key={gift.id}>
                       <td>
                         <div className="gift-image-cell">
-                          <img src={gift.image} alt={gift.name} className="gift-thumbnail" />
+                          <img src={gift.image} alt={gift.giftName || 'מתנה'} className="gift-thumbnail" />
                         </div>
                       </td>
                       <td>
                         <div className="gift-name">
-                          <strong>{gift.name}</strong>
+                          <strong>{gift.giftName || 'ללא שם'}</strong>
                         </div>
                       </td>
                       <td>
-                        <span className="price-badge">₪{gift.price.toLocaleString()}</span>
+                        <span className="price-badge">₪{(gift.estimatedPrice || 0).toLocaleString()}</span>
                       </td>
                       <td>
                         <div className="reserved-by">
@@ -617,7 +631,7 @@ export default function GiftsPage() {
             {filteredGifts.map(gift => (
               <div key={gift.id} className="gift-card glass">
                 <div className="card-image">
-                  <img src={gift.image} alt={gift.name} />
+                  <img src={gift.image} alt={gift.giftName || 'מתנה'} />
                   <div className="card-overlay">
                     <span className={`status-badge ${getStatusClass(gift)}`}>
                       {getStatusText(gift)}
@@ -627,8 +641,8 @@ export default function GiftsPage() {
                 
                 <div className="card-content">
                   <div className="card-header">
-                    <h3 className="gift-name">{gift.name}</h3>
-                    <span className="price-badge">₪{gift.price.toLocaleString()}</span>
+                  <h3 className="gift-name">{gift.giftName || 'ללא שם'}</h3>
+                  <span className="price-badge">₪{(gift.estimatedPrice || 0).toLocaleString()}</span>
                   </div>
                   
                   <div className="card-body">
@@ -735,8 +749,8 @@ export default function GiftsPage() {
                 <input
                   id="giftName"
                   type="text"
-                  value={newGift.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  value={newGift.giftName}
+                  onChange={(e) => handleInputChange("giftName", e.target.value)}
                   placeholder="לדוגמה: מכונת קפה דלונגי"
                   required
                 />
@@ -751,8 +765,8 @@ export default function GiftsPage() {
                   id="giftPrice"
                   type="number"
                   min="1"
-                  value={newGift.price}
-                  onChange={(e) => handleInputChange("price", e.target.value)}
+                  value={newGift.estimatedPrice}
+                  onChange={(e) => handleInputChange("estimatedPrice", e.target.value)}
                   placeholder="299"
                   required
                 />
@@ -805,7 +819,7 @@ export default function GiftsPage() {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .gifts-page {
           padding: var(--space-lg);
           display: flex;
@@ -825,6 +839,11 @@ export default function GiftsPage() {
           justify-content: space-between;
           align-items: flex-start;
           gap: var(--space-md);
+        }
+
+        .header-actions {
+          display: flex;
+          gap: var(--space-sm);
         }
 
         .header-info h1 {
@@ -863,6 +882,18 @@ export default function GiftsPage() {
 
         .btn-primary:hover {
           background: var(--brand-hover);
+          transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+          border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(156, 163, 175, 0.3);
+          color: var(--text);
           transform: translateY(-1px);
         }
 
