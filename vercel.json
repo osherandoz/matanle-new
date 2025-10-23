@@ -1,5 +1,4 @@
 {
-  // Vercel configuration for SPA routing
   "rewrites": [
     {
       "source": "/(.*)",
